@@ -1,0 +1,19 @@
+========================================
+Saltstack Continuous Integration Authors
+========================================
+
+Who's Who in SSCI
+=================
+
+The Man With the Plan
+---------------------
+
+Pedro Algarvio, aka, s0undt3ch is the main developer of SSCI.
+
+
+Developers
+----------
+
+.. Please add your name above this comment line
+
+.. vim: ft=rst fenc=utf-8 spell spl=en cc=100 tw=99 fo=want sts=2 sw=2 et
