@@ -38,6 +38,11 @@ class CustomBuild(build.build):
         build.build.initialize_options(self)
         self.sass = None
 
+    def finalize_options(self):
+        build.build.finalize_options(self)
+        if self.sass is not None:
+            self.sass = os.path.abspath(os.path.expanduser(self.sass))
+
     def run(self):
         build.build.run(self)
         # Compile SASS files
