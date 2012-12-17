@@ -1,0 +1,4 @@
+Salt>=0.11
+Flask>=0.9
+Flask-SQLAlchemy>=0.16
+sqlalchemy-migrate>=0.7.2
