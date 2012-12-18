@@ -11,7 +11,7 @@
 '''
 
 
-def run_saltstack_ci_web():
+def run_salt_ci_web():
     from saltci.web.cli import SaltCIWeb
     saltciweb = SaltCIWeb()
     saltciweb.run()
