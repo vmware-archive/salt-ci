@@ -19,7 +19,7 @@ from distutils import log
 from distutils.command import clean, build
 from distutils.extension import Extension
 
-import ssci as package
+import saltci as package
 
 
 REQUIREMENTS = ['Distribute']
@@ -69,7 +69,7 @@ setup(name=package.__package_name__,
       keywords="Salt-CI Salt Continuous Integration",
       packages=['saltci'],
       package_data={
-          'ssci.': [
+          'saltci.': [
               '**.css',
               '**.js',
               '**.png',
@@ -91,7 +91,7 @@ setup(name=package.__package_name__,
       },
       entry_points="""
       [console_scripts]
-      salt-ci-web = ssci.scripts:run_salt_ci_web
+      salt-ci-web = saltci.scripts:run_salt_ci_web
 
       [distutils.commands]
       compile = babel.messages.frontend:compile_catalog
