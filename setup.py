@@ -5,7 +5,7 @@
     setup.py
     ~~~~~~~~
 
-    SaltStack Continuous Integration Package Setup
+    Salt Continuous Integration Package Setup
 
     :codeauthor: :email:`Pedro Algarvio (pedro@algarvio.me)`
     :copyright: © 2012 by the SaltStack Team, see AUTHORS for more details.
@@ -66,15 +66,15 @@ setup(name=package.__package_name__,
       long_description=package.__description__,
       license=package.__license__,
       platforms="Linux",
-      keywords="SaltStack Continuous Integration",
-      packages=['ssci'],
+      keywords="Salt-CI Salt Continuous Integration",
+      packages=['saltci'],
       package_data={
           'ssci.': [
               '**.css',
               '**.js',
               '**.png',
               '**.cfg',
-              'web/translations/*/LC_MESSAGES/sass.mo'
+              'web/translations/*/LC_MESSAGES/saltci.mo'
           ]
       },
       install_requires=REQUIREMENTS,
@@ -82,7 +82,7 @@ setup(name=package.__package_name__,
           'build': CustomBuild
       },
       message_extractors={
-          'ssci.web': [
+          'saltci.web': [
               ('**.py', 'python', None),
               ('**.pyx', 'python', None),
               ('templates/**.html', 'jinja2', None),
@@ -91,7 +91,7 @@ setup(name=package.__package_name__,
       },
       entry_points="""
       [console_scripts]
-      saltstack-ci-web = ssci.scripts:run_saltstack_ci_web
+      salt-ci-web = ssci.scripts:run_salt_ci_web
 
       [distutils.commands]
       compile = babel.messages.frontend:compile_catalog

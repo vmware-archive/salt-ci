@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    ssci.scripts
-    ~~~~~~~~~~~~
+    saltci.scripts
+    ~~~~~~~~~~~~~~
 
     This module contains the function calls to execute command line scripts.
 
@@ -12,6 +12,6 @@
 
 
 def run_saltstack_ci_web():
-    from ssci.web.cli import SaltStackCIWeb
-    ssciweb = SaltStackCIWeb()
-    ssciweb.run()
+    from saltci.web.cli import SaltCIWeb
+    saltciweb = SaltCIWeb()
+    saltciweb.run()

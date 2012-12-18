@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 '''
-    ssci.web
-    ~~~~~~~~
+    saltci.web
+    ~~~~~~~~~~
 
-    SaltStack Continuous Integration Web Front-end.
+    Salt Continuous Integration Web Front-end.
 
     :codeauthor: :email:`Pedro Algarvio (pedro@algarvio.me)`
     :copyright: © 2012 by the SaltStack Team, see AUTHORS for more details.

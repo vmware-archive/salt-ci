@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    SaltStack Continuous Integration
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Salt Continuous Integration
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
     :codeauthor: :email:`Pedro Algarvio (pedro@algarvio.me)`
@@ -11,12 +11,12 @@
 
 __version_info__    = (0, 6)
 __version__         = '.'.join(map(str, __version_info__))
-__package_name__    = 'SaltStack-CI'
-__summary__         = 'SaltStack Continuous Integration'
+__package_name__    = 'Salt-CI'
+__summary__         = 'Salt Continuous Integration'
 __author__          = 'Pedro Algarvio'
 __email__           = 'pedro@algarvio.me'
 __license__         = 'Apache 2.0'
-__url__             = 'https://github.com/saltstack/saltstack-ci'
+__url__             = 'https://github.com/saltstack/salt-ci'
 __description__     = __doc__
 
 
@@ -55,10 +55,12 @@ def __get_version_info_from_git():
         if parsed_version_info != __version_info__:
             from salt import log
             msg = (
-                'In order to get the proper SaltStack-CI version with the git hash you need '
+                'In order to get the proper {0} version with the git hash you need '
                 'to update the package\'s local git tags. Something like: \'git fetch --tags\' '
                 'or \'git fetch --tags upstream\' if you followed salt\'s contribute '
-                'documentation. The version string WILL NOT include the git hash.'
+                'documentation. The version string WILL NOT include the git hash.'.format(
+                    __package_name__
+                )
             )
             if log.is_console_configured():
                 import logging
