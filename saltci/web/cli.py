@@ -15,6 +15,7 @@ import pwd
 import logging
 from salt.utils.verify import verify_env
 from saltci.utils.parsers import SaltCIWebParser
+from saltci.web.signals import configuration_loaded
 
 
 class SaltCIWeb(SaltCIWebParser):
@@ -44,7 +45,7 @@ class SaltCIWeb(SaltCIWebParser):
         self.setup_logfile_logger()
 
         from saltci.web.application import app
-        app.config.from_object(self.config)
+        configuration_loaded.send(self.config)
 
         try:
             app.run(

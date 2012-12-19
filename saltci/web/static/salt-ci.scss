@@ -1,0 +1,62 @@
+@font-face {
+  font-family: "Gputeks Regular";
+  src: url(fonts/Gputeks-Regular.ttf);
+}
+
+@font-face {
+  font-family: "Gputeks Bold";
+  src: url(fonts/Gputeks-Bold.ttf);
+}
+
+@font-face {
+  font-family: "saxMono";
+  src: url(fonts/saxmono.ttf);
+}
+
+@mixin initial_html_and_body {
+  margin: 0px;
+  padding: 0px;
+  font-family: "Gputeks Regular";
+  font-size: 13px;
+  height: 100%;
+}
+
+$footer-height: 25px;
+
+html {
+  @include initial_html_and_body;
+}
+
+body {
+  @include initial_html_and_body;
+}
+
+#body-wrapper {
+  min-height: 100%;
+}
+
+#container {
+  overflow: auto;
+  padding-bottom: $footer-height;
+}
+
+#footer {
+  position: relative;
+  padding: 4px;
+  margin-top: -$footer-height;
+  height: $footer-height;
+  clear: both;
+  text-align: center;
+  color: #fff;
+  background-color: #1b1b1b;
+  background-image: linear-gradient(to bottom, #222222, #111111);
+  background-repeat: repeat-x;
+  border-top: 1px solid #252525;
+  a { color: #fff; }
+  a:hover { color: #999; }
+}
+
+div.navbar-inner.logo {
+  background-image: url(salt-logo-40.png);
+  background-repeat: no-repeat;
+}

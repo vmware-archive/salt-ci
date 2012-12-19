@@ -1,2 +1,4 @@
 # Ignore compiled css files
 saltci/web/static/*.css
+# Ignore local testing .conf* directories
+.conf*/
