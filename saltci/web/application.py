@@ -21,10 +21,16 @@ from saltci.web.signals import configuration_loaded
 # First we instantiate the application object
 app = Flask(__name__)
 
-
 @configuration_loaded.connect
 def on_configuration_loaded(config):
     app.config.update(config)
+
+    # Setup out database support
+    from saltci.database import db
+    db.init_app(app)
+    # Let's check for upgrades
+    db.upgrade_database_required()
+
     if app.debug:
         # LessCSS Support
         from flask.ext.sass import Sass

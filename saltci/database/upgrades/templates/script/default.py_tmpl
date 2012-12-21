@@ -1,0 +1,27 @@
+import logging
+from saltci.database import db
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import create_session
+from migrate import *
+
+# No need to change logger name bellow, unless you're after something specific
+log = logging.getLogger('saltci.database.upgrades.{0}'.format(__name__.split('_', 1).pop(0)))
+
+# Local declarative base
+Model = declarative_base(name='Model')
+metadata = Model.metadata
+
+
+def upgrade(migrate_engine):
+    # Upgrade operations go here. Don't create your own engine; bind
+    # migrate_engine to your metadata
+
+    # Bind the metadata to the migrate engine
+    metadata.bind = migrate_engine
+
+
+def downgrade(migrate_engine):
+    # Operations to reverse the above upgrade go here.
+
+    # Bind the metadata to the migrate engine
+    metadata.bind = migrate_engine

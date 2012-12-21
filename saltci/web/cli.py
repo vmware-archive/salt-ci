@@ -14,6 +14,7 @@ import os
 import pwd
 import logging
 from salt.utils.verify import verify_env
+from saltci.exceptions import SaltCIStartupException
 from saltci.utils.parsers import SaltCIWebParser
 from saltci.web.signals import configuration_loaded
 
@@ -21,6 +22,15 @@ from saltci.web.signals import configuration_loaded
 class SaltCIWeb(SaltCIWebParser):
     def run(self):
         self.parse_args()
+        try:
+            self._run()
+        except SaltCIStartupException, err:
+            self.error(err)
+        except KeyboardInterrupt:
+            logging.getLogger(__name__).warn('\nCTRL-C. Exiting...')
+            sys.exit(0)
+
+    def _run(self):
 
         # ----- Setup some logging defaults for external python libraries ----------------------->
         logging.getLogger('sqlalchemy').setLevel(logging.INFO)
@@ -47,11 +57,8 @@ class SaltCIWeb(SaltCIWebParser):
         from saltci.web.application import app
         configuration_loaded.send(self.config)
 
-        try:
-            app.run(
-                self.config.get('serve_host'),
-                self.config.get('serve_port'),
-                debug=app.config.get('DEBUG', False)
-            )
-        except KeyboardInterrupt:
-            sys.exit(0)
+        app.run(
+            self.config.get('serve_host'),
+            self.config.get('serve_port'),
+            debug=app.config.get('DEBUG', False)
+        )

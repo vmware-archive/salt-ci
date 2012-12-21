@@ -15,3 +15,9 @@ def run_salt_ci_web():
     from saltci.web.cli import SaltCIWeb
     saltciweb = SaltCIWeb()
     saltciweb.run()
+
+
+def run_salt_ci_migrate():
+    from saltci.database.cli import SaltCIMigrate
+    saltcimigrate = SaltCIMigrate()
+    saltcimigrate.run()

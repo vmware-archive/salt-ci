@@ -91,7 +91,8 @@ setup(name=package.__package_name__,
       },
       entry_points="""
       [console_scripts]
-      salt-ci-web = saltci.scripts:run_salt_ci_web
+      salt-ci-web     = saltci.scripts:run_salt_ci_web
+      salt-ci-migrate = saltci.scripts:run_salt_ci_migrate
 
       [distutils.commands]
       compile = babel.messages.frontend:compile_catalog
