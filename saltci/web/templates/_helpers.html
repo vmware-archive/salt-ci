@@ -1,0 +1,7 @@
+{% macro render_gravatar_img(size) %}
+{% if g.account and g.account.gravatar_id -%}
+<img class="gravatar"
+     src="http{% if request.scheme=='https' %}"s://secure.{% else %}://www.{% endif
+     %}gravatar.com/avatar/{{ g.account.gravatar_id }}?s={{ size }}&r=pg&d=404&d=https://a248.e.akamai.net/assets.github.com/images/gravatars/gravatar-user-420.png"/>
+{% endif %}
+{% endmacro %}

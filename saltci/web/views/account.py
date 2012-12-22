@@ -118,5 +118,5 @@ def signout():
 
 @account.route('/preferences', methods=('GET',))
 def prefs():
-    pass
+    return render_template('account/prefs.html')
 # <---- Views ------------------------------------------------------------------------------------

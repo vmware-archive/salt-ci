@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% from "_helpers.html" import render_gravatar_img with context %}
+{% block contents %}
+<form>
+  <fieldset>
+    <legend>
+      {{ render_gravatar_img(64) }}
+      Account Information
+    </legend>
+    <label>Username:</label>
+    <span class="input-xlarge uneditable-input">{{ g.account.gh_login }}</span>
+    <label>Salt-CI Token:</label>
+    <span class="input-xlarge uneditable-input">{{ g.account.hooks_token }}</span>
+  </fieldset>
+</form>
+{% endblock %}
