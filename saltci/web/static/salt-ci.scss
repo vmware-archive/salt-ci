@@ -87,3 +87,9 @@ body {
   a:hover { color: #999; }
 }
 
+fieldset.hook-urls {
+  margin-left: 20px;
+  legend, label, input, span {
+    font-size: smaller;
+  }
+}

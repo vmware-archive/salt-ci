@@ -46,9 +46,11 @@ def on_configuration_loaded(config):
 # ----- Setup Application Views ----------------------------------------------------------------->
 from .views.main import main
 from .views.account import account
+from .views.hooks import hooks
 
 app.register_blueprint(main)
 app.register_blueprint(account)
+app.register_blueprint(hooks)
 # <---- Setup Application Views ------------------------------------------------------------------
 
 
