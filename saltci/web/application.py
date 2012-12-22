@@ -22,6 +22,7 @@ from saltci.web.signals import configuration_loaded
 # First we instantiate the application object
 app = Flask(__name__)
 
+
 @configuration_loaded.connect
 def on_configuration_loaded(config):
     app.config.update(config)

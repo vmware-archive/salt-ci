@@ -7,6 +7,8 @@
 
     <link rel="icon" type="image/ico" href="{{ url_for('static', filename='favicon.ico') }}"/>
     <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='ext/bootstrap/css/bootstrap{0}.css'.format('' if config.DEBUG else '.min')) }}"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='ext/bootstrap/css/bootstrap-responsive{0}.css'.format('' if config.DEBUG else '.min')) }}"/>
 
     <script type="text/javascript" src="{{ url_for('static', filename='ext/jquery-1.8.3{0}.js'.format('' if config.DEBUG else '.min')) }}"></script>
@@ -15,8 +17,13 @@
 
     <!--[if !IE 7]>
       <style type="text/css">
-        #wrap {display:table;height:100%}
+        #body-wraper {display:table;height:100%}
       </style>
+    <![endif]-->
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
     <title>Salt-CI &mdash; {% block title %}Welcome{% endblock %}</title>
@@ -40,7 +47,8 @@
       </div>
     </div>
     <div id="body-wrapper">
-      <div id="container" class="container">
+      <div id="main-content" class="container">
+        {%- include '_flash_messages.html' -%}
         {%- block contents %}{% endblock -%}
       </div>
     </div>

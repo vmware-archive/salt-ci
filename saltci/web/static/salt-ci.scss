@@ -22,6 +22,7 @@
 }
 
 $footer-height: 25px;
+$body-padding-top: 60px;
 
 html {
   @include initial_html_and_body;
@@ -32,6 +33,17 @@ body {
 }
 
 #navbar.navbar.navbar-fixed-top {
+
+  div.logo {
+    div.container {
+      a.brand {
+        background-image: url(salt-logo-40.png);
+        background-repeat: no-repeat;
+        background-position: left center;
+        padding-left: 45px;
+      }
+    }
+  }
 
   ul#account-nav.nav {
     li.dropdown {
@@ -55,14 +67,13 @@ body {
   min-height: 100%;
 }
 
-#container {
+#main-content {
   overflow: auto;
+  padding-top: $body-padding-top;
   padding-bottom: $footer-height;
 }
 
 #footer {
-  position: relative;
-  padding: 4px;
   margin-top: -$footer-height;
   height: $footer-height;
   clear: both;
@@ -76,8 +87,3 @@ body {
   a:hover { color: #999; }
 }
 
-div.navbar-inner.logo {
-  background-image: url(salt-logo-40.png);
-  background-repeat: no-repeat;
-  background-position: left center;
-}
