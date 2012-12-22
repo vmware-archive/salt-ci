@@ -35,6 +35,9 @@ class AccountQuery(db.Query):
     def from_github_token(self, token):
         return self.filter(Account.gh_token == token).first()
 
+    def from_hooks_token(self, token):
+        return self.filter(Account.hooks_token == token).first()
+
 
 class Account(db.Model):
     __tablename__   = 'accounts'

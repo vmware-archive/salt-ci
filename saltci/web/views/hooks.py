@@ -14,6 +14,7 @@ import json
 import pprint
 import logging
 from saltci.web.application import *
+from saltci.web.database.models import Account
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +31,16 @@ def push(token):
         log.warning(
             'Got a hooks push request from an invalid address({0}). Request Values: {1}'.format(
                 request.remote_addr, request.values
+            )
+        )
+        abort(401)
+
+    account = Account.query.from_hooks_token(token)
+    if account is None:
+        log.warning(
+            'Got a hooks push request from {0} with an invalid token({1}). '
+            'Request Values: {2}'.format(
+                request.remote_addr, token, request.values
             )
         )
         abort(401)
