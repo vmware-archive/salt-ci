@@ -1,5 +1,6 @@
 Salt>=0.11
 Flask>=0.9
-Flask-SQLAlchemy>=0.16
+-e git+https://github.com/s0undt3ch/Flask-Sass.git#egg=Flask-Sass
+-e git+https://github.com/s0undt3ch/flask-sqlalchemy.git#egg=Flask-SQLAlchemy
 sqlalchemy-migrate>=0.7.2
 PyGithub>=1.9.1
