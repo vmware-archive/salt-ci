@@ -17,7 +17,7 @@
   margin: 0px;
   padding: 0px;
   font-family: "Gputeks Regular";
-  font-size: 13px;
+  /*font-size: 13px;*/
   height: 100%;
 }
 
@@ -29,6 +29,26 @@ html {
 
 body {
   @include initial_html_and_body;
+}
+
+#navbar.navbar.navbar-fixed-top {
+
+  ul#account-nav.nav {
+    li.dropdown {
+      padding-top: 2px;
+      padding-bottom: 2px;
+
+      a {
+        padding-top: 3px;
+        padding-bottom: 2px;
+
+        img.gravatar {
+          border: 1px solid #444;
+          box-shadow: 2px 2px 8px #444;
+        }
+      }
+    }
+  }
 }
 
 #body-wrapper {
@@ -59,4 +79,5 @@ body {
 div.navbar-inner.logo {
   background-image: url(salt-logo-40.png);
   background-repeat: no-repeat;
+  background-position: left center;
 }

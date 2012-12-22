@@ -11,7 +11,8 @@
 '''
 
 from flask import (
-    Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, render_template
+    Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, json,
+    render_template
 )
 from werkzeug.contrib.fixers import ProxyFix
 from saltci.web.signals import configuration_loaded
@@ -43,10 +44,21 @@ def on_configuration_loaded(config):
 
 # ----- Setup Application Views ----------------------------------------------------------------->
 from .views.main import main
+from .views.account import account
 
 app.register_blueprint(main)
+app.register_blueprint(account)
 # <---- Setup Application Views ------------------------------------------------------------------
 
+
+# ----- Setup Request Decorators ---------------------------------------------------------------->
+@app.before_request
+def before_request():
+    from saltci.database import models
+    g.account = None
+    if 'ght' in session:
+        g.account = models.Account.query.from_github_token(session['ght'])
+# <---- Setup Request Decorators -----------------------------------------------------------------
 
 # ----- Simplify * Imports ---------------------------------------------------------------------->
 __all__ = [
@@ -60,6 +72,7 @@ __all__ = [
     'Markup',
     'abort',
     'Blueprint',
-    'render_template'
+    'json',
+    'render_template',
 ]
 # <---- Simplify * Imports -----------------------------------------------------------------------

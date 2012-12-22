@@ -70,6 +70,11 @@ def saltci_web_config(path):
         LOGGER_NAME='saltci.web.server',
         # <---- Flask Application Settings -------------------------------------------------------
 
+        # ----- GitHub Secrets ------------------------------------------------------------------>
+        GITHUB_CLIENT_ID='',
+        GITHUB_CLIENT_SECRET='',
+        # <---- GitHub Secrets -------------------------------------------------------------------
+
         # <---- Flask Related Settings -----------------------------------------------------------
     )
     saltconfig.load_config(opts, path, 'SALT_CI_WEB_CONFIG')

@@ -12,6 +12,7 @@
 
 import os
 import pwd
+import sys
 import logging
 from salt.utils.verify import verify_env
 from saltci.exceptions import SaltCIStartupException

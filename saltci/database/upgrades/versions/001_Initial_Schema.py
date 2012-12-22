@@ -38,12 +38,13 @@ class SchemaVersion(Model):
         self.version = version
 
 
-class Accounts(Model):
+class Account(Model):
     __tablename__   = 'accounts'
 
-    id              = db.Column(db.Integer, primary_key=True)
-    username        = db.Column(db.String(100))
-    github_token    = db.Column(db.String(100))
+    gh_id           = db.Column('github_id', db.Integer, primary_key=True)
+    gh_login        = db.Column('github_login', db.String(100))
+    gh_token        = db.Column('github_access_token', db.String(100), index=True)
+    gravatar_id     = db.Column(db.String(32))
     hooks_token     = db.Column(db.String(32), index=True, default=lambda: uuid4().hex)
 
 
@@ -58,9 +59,9 @@ def upgrade(migrate_engine):
     session = create_session(migrate_engine, autoflush=True, autocommit=False)
 
     # Let's create our tables
-    if not migrate_engine.has_table(Accounts.__tablename__):
+    if not migrate_engine.has_table(Account.__tablename__):
         log.info('Creating accounts table')
-        Accounts.__table__.create(migrate_engine)
+        Account.__table__.create(migrate_engine)
 
 
 def downgrade(migrate_engine):
@@ -71,4 +72,4 @@ def downgrade(migrate_engine):
 
     if migrate_engine.has_table(Accounts.__tablename__):
         log.info('Removing the accounts table')
-        Accounts.__table__.drop(migrate_engine)
+        Account.__table__.drop(migrate_engine)

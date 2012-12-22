@@ -1,0 +1,17 @@
+<ul class="nav pull-right" id="account-nav">
+  <li class="dropdown">
+  {% if g.account %}
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+    {% if g.account.gravatar_id -%}
+      <img class="gravatar" src="http{% if request.scheme=='https' %}"s://secure.{% else %}://www.{% endif
+      %}gravatar.com/avatar/{{ g.account.gravatar_id }}?s=28&r=pg&d=404&d=https://a248.e.akamai.net/assets.github.com/images/gravatars/gravatar-user-420.png"/>{% endif %} {{ g.account.gh_login }}<b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="{{ url_for('account.prefs') }}">Preferences</a></li>
+      <li><a href="{{ url_for('account.signout') }}">Sign-Out</a></li>
+    </ul>
+  {% else %}
+    <a href="{{ url_for('account.signin') }}">Sign-In</a>
+  {% endif %}
+  </li>
+</ul>

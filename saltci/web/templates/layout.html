@@ -23,12 +23,13 @@
     {% block head %}{% endblock %}
   </head>
   <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div id="navbar" class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner logo">
         <div class="container">
           <a class="brand" href="{{ url_for('main.index') }}">Salt-CI</a>
           <div class="nav-collapse collapse">
-            <p class="navbar-text pull-right">Who Am I?</p>
+            {%- include '_account_nav.html' -%}
+          </div>
             <!-- <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
               <li><a href="#about">About</a></li>
