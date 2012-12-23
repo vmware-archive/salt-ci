@@ -1,7 +1,8 @@
 Salt>=0.11
+blinker
 Flask>=0.9
 sqlalchemy<=0.7.8
-Flask-Sass=>0.9
+Flask-Sass>=0.9
 Flask-SQLAlchemy>=0.16
 sqlalchemy-migrate>=0.7.2
 PyGithub>=1.9.1
