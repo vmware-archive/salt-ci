@@ -31,6 +31,17 @@ class SaltCIWebParser(saltparsers.OptionParser,
         return config.saltci_web_config(self.get_config_file_path('salt-ci-web'))
 
     def _mixin_setup(self):
+        self.shell_options_group = optparse.OptionGroup(
+            self, 'Interactive Shell'
+        )
+        self.shell_options_group.add_option(
+            '-S', '--shell',
+            default=False,
+            action='store_true',
+            help='Run web application in an interactive shell'
+        )
+        self.add_option_group(self.shell_options_group)
+
         self.serve_options_group = optparse.OptionGroup(
             self, "WebServer Options"
         )

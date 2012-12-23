@@ -1,0 +1,43 @@
+# English translations for Salt-CI.
+# Copyright (C) 2012 SaltStack
+# This file is distributed under the same license as the Salt-CI project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Salt-CI 0.6\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2012-12-23 22:34+0000\n"
+"PO-Revision-Date: 2012-12-23 22:34+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: saltci/web/views/account.py:36
+msgid "You're already authenticated!"
+msgstr ""
+
+#: saltci/web/views/account.py:68
+msgid "This authentication has been tampered with! Aborting!!!"
+msgstr ""
+
+#: saltci/web/views/account.py:106
+msgid "You are now signed in."
+msgstr ""
+
+#: saltci/web/views/account.py:114
+msgid "You are now signed out."
+msgstr ""
+
+#: saltci/web/views/account.py:116
+msgid "You're not authenticated!"
+msgstr ""
+
+#: saltci/web/views/main.py:24
+msgid "Foo"
+msgstr ""
+

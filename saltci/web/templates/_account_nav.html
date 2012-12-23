@@ -6,11 +6,13 @@
     {{ render_gravatar_img(28) }} {{ g.account.gh_login }}<b class="caret"></b>
     </a>
     <ul class="dropdown-menu">
-      <li><a href="{{ url_for('account.prefs') }}">Preferences</a></li>
-      <li><a href="{{ url_for('account.signout') }}">Sign-Out</a></li>
+      <li><a href="{{ url_for('account.prefs') }}">{% trans %}Preferences{% endtrans %}</a></li>
+      <li><a href="{{ url_for('account.signout') }}">{% trans %}Sign-Out{% endtrans %}</a></li>
     </ul>
   {% else %}
-    <a href="{{ url_for('account.signin') }}">Sign-In</a>
+  <a href="{{ url_for('account.signin') }}">
+    <button class="btn btn-info">{% trans %}Sign-In{% endtrans %}</button>
+  </a>
   {% endif %}
   </li>
 </ul>

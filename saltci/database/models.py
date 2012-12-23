@@ -47,6 +47,8 @@ class Account(db.Model):
     gh_token        = db.Column('github_access_token', db.String(100), index=True)
     gravatar_id     = db.Column(db.String(32))
     hooks_token     = db.Column(db.String(32), index=True, default=lambda: uuid4().hex)
+    locale          = db.Column(db.String(10), default=lambda: 'en')
+    timezone        = db.Column(db.String(25), default=lambda: 'UTC')
 
     query_class     = AccountQuery
 

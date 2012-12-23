@@ -33,7 +33,7 @@ def signin():
     github_token = session.get('ght', None)
     if github_token is not None and g.account is not None:
         # This user is already authenticated and is valid user(it's present in our database)
-        flash('You\'re already authenticated!')
+        flash(_('You\'re already authenticated!'))
         return redirect(url_for('main.index'))
     elif github_token is not None and g.account is None:
         # If we reached this point, the github token is not in our database
@@ -65,7 +65,7 @@ def callback():
     code = request.args.get('code')
     github_state = request.args.get('state')
     if github_state != session.pop('github_state', None):
-        flash('This authentication has been tampered with! Aborting!!!', 'error')
+        flash(_('This authentication has been tampered with! Aborting!!!'), 'error')
 
     urlargs = {
         'code': code,
@@ -103,7 +103,7 @@ def callback():
             db.session.add(new_account)
             db.session.commit()
 
-    flash('You are now signed in.', 'success')
+    flash(_('You are now signed in.'), 'success')
     return redirect(url_for('main.index'))
 
 
@@ -111,9 +111,9 @@ def callback():
 def signout():
     if session.get('ght', None) is not None:
         session.pop('ght')
-        flash('You are now signed out.', 'success')
+        flash(_('You are now signed out.'), 'success')
     else:
-        flash('You\'re not authenticated!')
+        flash(_('You\'re not authenticated!'))
     return redirect(url_for('main.index'))
 
 

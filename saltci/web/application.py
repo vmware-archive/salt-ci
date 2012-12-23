@@ -14,14 +14,38 @@ from flask import (
     Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, json, jsonify,
     render_template
 )
+from flask.ext.babel import Babel, gettext as _
 from werkzeug.contrib.fixers import ProxyFix
 from saltci.web.signals import configuration_loaded
+
+
+# ----- Simplify * Imports ---------------------------------------------------------------------->
+__all__ = [
+    'app',
+    'flash',
+    'g',
+    'redirect',
+    'url_for',
+    'request',
+    'session',
+    'Markup',
+    'abort',
+    'Blueprint',
+    'json',
+    'jsonify',
+    'render_template',
+    '_',
+]
+# <---- Simplify * Imports -----------------------------------------------------------------------
 
 
 # ----- Setup The Flask application ------------------------------------------------------------->
 # First we instantiate the application object
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)  # Fix proxied environment variables
+
+# I18N & L10N support
+babel = Babel(app)
 
 
 @configuration_loaded.connect
@@ -64,20 +88,27 @@ def before_request():
         g.account = models.Account.query.from_github_token(session['ght'])
 # <---- Setup Request Decorators -----------------------------------------------------------------
 
-# ----- Simplify * Imports ---------------------------------------------------------------------->
-__all__ = [
-    'app',
-    'flash',
-    'g',
-    'redirect',
-    'url_for',
-    'request',
-    'session',
-    'Markup',
-    'abort',
-    'Blueprint',
-    'json',
-    'jsonify',
-    'render_template',
-]
-# <---- Simplify * Imports -----------------------------------------------------------------------
+
+# ----- Setup Babel Selectors ------------------------------------------------------------------->
+@babel.localeselector
+def get_locale():
+    if g.account is not None:
+        # Return the user's preferred locale
+        return g.account.locale
+
+    # otherwise try to guess the language from the user accept
+    # header the browser transmits. The best match wins.
+
+    # Which translations do we support?
+    supported = set(['en'] + [str(l) for l in babel.list_translations()])
+    return request.accept_languages.best_match(supported)
+
+
+@babel.timezoneselector
+def get_timezone():
+    if g.account is None:
+        # No user is logged in, return the app's default timezone
+        return app.config.get('BABEL_DEFAULT_LOCALE', 'UTC')
+    # Return the user's preferred timezone
+    return g.account.timezone
+# <---- Setup Babel Selectors --------------------------------------------------------------------

@@ -70,6 +70,11 @@ def saltci_web_config(path):
         LOGGER_NAME='saltci.web.server',
         # <---- Flask Application Settings -------------------------------------------------------
 
+        # ----- Flask Babel(I18N & L10N) Settings ----------------------------------------------->
+        BABEL_DEFAULT_LOCALE='en',
+        BABEL_DEFAULT_TIMEZONE='UTC',
+        # <---- Flask Babel(I18N & L10N) Settings ------------------------------------------------
+
         # ----- GitHub Secrets ------------------------------------------------------------------>
         GITHUB_CLIENT_ID='',
         GITHUB_CLIENT_SECRET='',

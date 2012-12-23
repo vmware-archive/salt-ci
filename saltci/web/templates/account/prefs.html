@@ -1,19 +1,22 @@
 {% extends "layout.html" %}
 {% from "_helpers.html" import render_gravatar_img with context %}
+{% block title %}
+  {% trans %}My Account{% endtrans %}
+{% endblock %}
 {% block contents %}
 <form>
   <fieldset>
     <legend>
       {{ render_gravatar_img(64) }}
-      Account Information
+      {% trans %}Account Information{% endtrans %}
     </legend>
-    <label>Username:</label>
+    <label>{% trans %}Username:{% endtrans %}</label>
     <span class="input-medium uneditable-input">{{ g.account.gh_login }}</span>
-    <label>Salt-CI Token:</label>
+    <label>{% trans %}Salt-CI Token:{% endtrans %}</label>
     <span class="input-xlarge uneditable-input">{{ g.account.hooks_token }}</span>
     <fieldset class="hook-urls">
-      <legend>Hooks URLs</legend>
-      <label>Push:</label>
+      <legend>{% trans %}Hooks URLs{% endtrans %}</legend>
+      <label>{% trans %}Push:{% endtrans %}</label>
       <span class="input-xxlarge uneditable-input">
         {{ url_for('hooks.push', token=g.account.hooks_token, _external=True) }}
       </span>
