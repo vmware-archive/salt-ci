@@ -11,7 +11,7 @@
 '''
 
 from flask import (
-    Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, json,
+    Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, json, jsonify,
     render_template
 )
 from werkzeug.contrib.fixers import ProxyFix
@@ -21,6 +21,7 @@ from saltci.web.signals import configuration_loaded
 # ----- Setup The Flask application ------------------------------------------------------------->
 # First we instantiate the application object
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)  # Fix proxied environment variables
 
 
 @configuration_loaded.connect
@@ -76,6 +77,7 @@ __all__ = [
     'abort',
     'Blueprint',
     'json',
+    'jsonify',
     'render_template',
 ]
 # <---- Simplify * Imports -----------------------------------------------------------------------
