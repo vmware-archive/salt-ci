@@ -52,6 +52,7 @@ def signin():
         'client_id': app.config.get('GITHUB_CLIENT_ID'),
         'redirect_uri': url_for('account.callback', _external=True)
     }
+    log.debug('New signin request. Redirect args: {0}'.format(urlargs))
     return redirect(
         'https://github.com/login/oauth/authorize?{0}'.format(
             urllib.urlencode(urlargs)
