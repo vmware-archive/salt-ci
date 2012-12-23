@@ -82,11 +82,11 @@ setup(name=package.__package_name__,
           'build': CustomBuild
       },
       message_extractors={
-          'saltci.web': [
-              ('**.py', 'python', None),
-              ('**.pyx', 'python', None),
-              ('templates/**.html', 'jinja2', None),
-              ('templates/**.txt', 'jinja2', None)
+          'saltci': [
+              ('web/**.py', 'python', None),
+              ('web/**.pyx', 'python', None),
+              ('web/templates/**.html', 'jinja2', None),
+              ('web/templates/**.txt', 'jinja2', None)
           ],
       },
       entry_points="""
