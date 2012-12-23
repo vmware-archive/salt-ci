@@ -58,8 +58,41 @@ class SaltCIWeb(SaltCIWebParser):
         from saltci.web.application import app
         configuration_loaded.send(self.config)
 
+        if self.options.shell:
+            return self.run_interactive_shell()
+
         app.run(
             self.config.get('serve_host'),
             self.config.get('serve_port'),
             debug=app.config.get('DEBUG', False)
         )
+
+    def run_interactive_shell(self):
+        banner = 'Interactive Salt-CI Shell'
+        pre_locals = locals().copy()
+        from saltci.web.application import *
+        from saltci.web.application import babel
+        post_locals = locals().copy()
+        namespace = {}
+        for key, value in post_locals.iteritems():
+            if key in pre_locals or key in ('pre_locals', 'post_locals', 'banner'):
+                continue
+            namespace[key] = value
+        from saltci.database import db, models
+        namespace['db'] = db
+        namespace['models'] = models
+        namespace['babel'] = babel
+        try:
+            from IPython.frontend.terminal.embed import InteractiveShellEmbed
+            sh = InteractiveShellEmbed(banner1=banner)
+        except ImportError:
+            from IPython.Shell import IPShellEmbed
+            sh = IPShellEmbed(banner=banner)
+        except ImportError:
+            pass
+        else:
+            sh(global_ns={}, local_ns=namespace)
+            return
+        # Default the regular shell
+        from code import interact
+        interact(banner, local=namespace)
