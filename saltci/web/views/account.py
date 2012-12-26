@@ -166,7 +166,7 @@ def signout():
 def prefs():
     form = ProfileForm(db_entry=g.identity.account, formdata=request.values.copy())
     if form.validate_on_submit():
-        db.update_dbentry_from_form(account, form)
+        db.update_dbentry_from_form(g.identity.account, form)
         db.session.commit()
         flash(_('Account details updated.'), 'success')
         return redirect_to('account.prefs')
