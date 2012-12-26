@@ -1,0 +1,13 @@
+{% macro render_field(field, options={}, show_description=True, inline_help=True) %}
+<div class="control-group{% if field.errors %} error{% endif %}">
+  <label class="control-label">{{ field.label }}</label>
+  <div class="controls">
+    {{ field(class_=' '.join([options.pop('class_', ''),
+                              options.pop('class', ''),
+                              (field.errors and 'error' or '')]).strip(), **options) }}
+    {% if field.description and show_description %}
+      <span class="help-{% if inline_help%}inline{% else %}block{% endif %}">{{ field.description }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}

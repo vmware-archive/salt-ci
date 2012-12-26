@@ -15,9 +15,12 @@ import urllib
 import httplib
 import github
 from uuid import uuid4
+from flask.ext.wtf import *
 from saltci.web.application import *
+from saltci.web.forms import *
 from saltci.database import db
 from saltci.database.models import Account
+
 
 log = logging.getLogger(__name__)
 
@@ -27,15 +30,51 @@ account = Blueprint('account', __name__, url_prefix='/account')
 # <---- Blueprints & Menu Entries ---------------------------------------------------------------
 
 
+# ----- Forms ----------------------------------------------------------------------------------->
+class ProfileForm(DBBoundForm):
+
+    title       = _('My Account')
+
+    gh_login    = TextField(_('Username'), validators=[Required()])
+    timezone    = SelectField(_('Timezone'))
+    locale      = SelectField(_('Locale'),
+                              description=_('This will be the language Salt-CI will use to you.'))
+
+    # Actions
+    update      = PrimarySubmitField(_('Update Details'))
+
+    def __init__(self, db_entry=None, formdata=None, *args, **kwargs):
+        super(ProfileForm, self).__init__(db_entry, formdata, *args, **kwargs)
+        self.timezone.choices = build_timezones(get_locale())
+        self.locale.choices = [
+            (l.language, l.display_name) for l in babel.list_translations()
+        ]
+
+    def validate_locale(self, field):
+        if field.data is None:
+            # In case there's only one locale, then the field is not
+            # rendered. Re-set the default.
+            field.data = self.db_entry.locale
+
+#    def validate(self):
+#
+#        if self.locale.data is None:
+#            # In case there's only one locale, then the field is not
+#            # rendered. Re-set the default.
+#            self.locale.data = self.db_entry.locale
+#        return super(ProfileForm, self).validate()
+# <---- Forms ------------------------------------------------------------------------------------
+
+
 # ----- Views ----------------------------------------------------------------------------------->
 @account.route('/signin', methods=('GET',))
 def signin():
     github_token = session.get('ght', None)
-    if github_token is not None and g.account is not None:
+    if github_token is not None and g.identity.account is not None:
         # This user is already authenticated and is valid user(it's present in our database)
         flash(_('You\'re already authenticated!'))
         return redirect(url_for('main.index'))
-    elif github_token is not None and g.account is None:
+    elif github_token is not None and g.identity.account is None:
         # If we reached this point, the github token is not in our database
         session.pop('ght')
 
@@ -62,10 +101,11 @@ def signin():
 
 @account.route('/signin/callback', methods=('GET',))
 def callback():
-    code = request.args.get('code')
-    github_state = request.args.get('state')
-    if github_state != session.pop('github_state', None):
+    github_state = request.args.get('state', None)
+    if github_state is None or github_state != session.pop('github_state', None):
         flash(_('This authentication has been tampered with! Aborting!!!'), 'error')
+
+    code = request.args.get('code')
 
     urlargs = {
         'code': code,
@@ -103,21 +143,32 @@ def callback():
             db.session.add(new_account)
             db.session.commit()
 
-    flash(_('You are now signed in.'), 'success')
+        identity_changed.send(app, identity=Identity(token, 'dbm'))
+        flash(_('You are now signed in.'), 'success')
+    print 1234455, data
     return redirect(url_for('main.index'))
 
 
 @account.route('/signout', methods=('GET',))
+@authenticated_permission.require(403)
 def signout():
     if session.get('ght', None) is not None:
         session.pop('ght')
+        identity_changed.send(app, identity=AnonymousIdentity())
         flash(_('You are now signed out.'), 'success')
     else:
         flash(_('You\'re not authenticated!'))
     return redirect(url_for('main.index'))
 
 
-@account.route('/preferences', methods=('GET',))
+@account.route('/preferences', methods=('GET', 'POST'))
+@authenticated_permission.require(403)
 def prefs():
-    return render_template('account/prefs.html')
+    form = ProfileForm(db_entry=g.identity.account, formdata=request.values.copy())
+    if form.validate_on_submit():
+        db.update_dbentry_from_form(account, form)
+        db.session.commit()
+        flash(_('Account details updated.'), 'success')
+        return redirect_to('account.prefs')
+    return render_template('account/prefs.html', form=form)
 # <---- Views ------------------------------------------------------------------------------------

@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% from "_form_helpers.html" import render_field %}
+
+{% block title %}{{ form.title }}{% endblock %}
+
+{% block contents %}
+  <form method="POST" action="">
+    <fieldset>
+      <legend>{{ form.title }}</legend>
+      {{ form.hidden_tag() }}
+      {% block form_contents %}{% endblock %}
+      <div class="form-actions">
+        {% block form_actions %}{% endblock %}
+      </div>
+    </fieldset>
+  </form>
+{% endblock %}
+
+{% block footer %}
+  {% block form_footer %}{% endblock %}
+{% endblock %}

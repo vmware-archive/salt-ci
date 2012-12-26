@@ -7,3 +7,6 @@ Flask-SQLAlchemy>=0.16
 sqlalchemy-migrate>=0.7.2
 PyGithub>=1.9.1
 Flask-Babel>=0.8
+Flask-Cache>=0.9.2
+Flask-WTF>=0.8.2
+Flask-Principal>=0.3.3

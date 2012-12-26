@@ -19,3 +19,13 @@ configuration_loaded = signal(
     'configuration-loaded',
     'Emitted once the configuration has been loaded.'
 )
+
+application_configured = signal(
+    'application-configured',
+    'Emitted once the application has been configured.'
+)
+
+after_identity_account_loaded = signal(
+    'after-identity-account-loaded',
+    'Emitted after loading the identity from the database.'
+)
