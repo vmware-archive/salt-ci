@@ -15,6 +15,7 @@ import logging
 from babel.dates import get_timezone_name
 from flask.ext.wtf import *
 from flask.ext.wtf import SubmitField as BaseSubmitField
+from flask.ext.wtf import TextField, HiddenField
 from werkzeug.datastructures import MultiDict
 from saltci.web.application import *
 
