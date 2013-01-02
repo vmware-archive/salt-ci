@@ -17,9 +17,9 @@ _COMMON_CONFIG = dict(
     log_file=None,
     log_level=None,
     log_level_logfile=None,
-    log_datefmt=saltconfig._dflt_log_datefmt,
-    log_fmt_console=saltconfig._dflt_log_fmt_console,
-    log_fmt_logfile=saltconfig._dflt_log_fmt_logfile,
+    log_datefmt=saltconfig._DFLT_LOG_DATEFMT,
+    log_fmt_console=saltconfig._DFLT_LOG_FMT_CONSOLE,
+    log_fmt_logfile=saltconfig._DFLT_LOG_FMT_LOGFILE,
     log_granular_levels={}
     # <---- Logging Configuration ----------------------------------------------------------------
 )
