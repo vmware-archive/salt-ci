@@ -10,10 +10,13 @@
     :license: Apache 2.0, see LICENSE for more details.
 """
 
-
+import logging
 from uuid import uuid4
 from datetime import datetime
 from saltci.database import db, orm
+
+
+log = logging.getLogger(__name__)
 
 
 class SchemaVersion(db.Model):
@@ -69,6 +72,10 @@ class Account(db.Model):
 
     def update_last_login(self):
         self.last_login = datetime.utcnow()
+
+    def generate_hooks_token(self):
+        log.info('Generating hooks token for user id: {0}'.format(self.gh_login))
+        self.hooks_token = uuid4().hex
 
 
 class PrivilegeQuery(orm.Query):

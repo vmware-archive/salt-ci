@@ -39,9 +39,11 @@ class ProfileForm(DBBoundForm):
     timezone    = SelectField(_('Timezone'))
     locale      = SelectField(_('Locale'),
                               description=_('This will be the language Salt-CI will use to you.'))
+    hooks_token = HiddenField(_('Hooks Token'))
 
     # Actions
     update      = PrimarySubmitField(_('Update Details'))
+    gen_token   = SubmitField(_('Generate Hooks Token'))
 
     def __init__(self, db_entry=None, formdata=None, *args, **kwargs):
         super(ProfileForm, self).__init__(db_entry, formdata, *args, **kwargs)
@@ -145,7 +147,6 @@ def callback():
 
         identity_changed.send(app, identity=Identity(token, 'dbm'))
         flash(_('You are now signed in.'), 'success')
-    print 1234455, data
     return redirect(url_for('main.index'))
 
 
@@ -166,6 +167,11 @@ def signout():
 def prefs():
     form = ProfileForm(db_entry=g.identity.account, formdata=request.values.copy())
     if form.validate_on_submit():
+        if 'gen-token' in request.values:
+            g.identity.account.generate_hooks_token()
+            db.session.commit()
+            flash('New token generated', 'success')
+            return redirect_to('account.prefs')
         db.update_dbentry_from_form(g.identity.account, form)
         db.session.commit()
         flash(_('Account details updated.'), 'success')
