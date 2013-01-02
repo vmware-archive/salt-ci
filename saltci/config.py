@@ -75,6 +75,11 @@ def saltci_web_config(path):
         BABEL_DEFAULT_TIMEZONE='UTC',
         # <---- Flask Babel(I18N & L10N) Settings ------------------------------------------------
 
+        # ----- Flask Cache Settings ------------------------------------------------------------>
+        # All settings, please check http://packages.python.org/Flask-Cache/
+        CACHE_TYPE=None,
+        # <---- Flask Cache Settings -------------------------------------------------------------
+
         # ----- GitHub Secrets ------------------------------------------------------------------>
         GITHUB_CLIENT_ID='',
         GITHUB_CLIENT_SECRET='',
