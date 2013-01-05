@@ -10,12 +10,17 @@
     :license: Apache 2.0, see LICENSE for more details.
 '''
 
+# pylint: disable-all
+
 import logging
 import migrate
+import iso8601
 from os import path
+from pytz import UTC
 from migrate.versioning.api import upgrade
 from migrate.versioning.repository import Repository
 from sqlalchemy import orm
+from sqlalchemy.types import TypeDecorator, DateTime as SaDateTime
 from flask.ext.sqlalchemy import SQLAlchemy as SQLAlchemyBase
 from saltci.exceptions import SaltCIStartupException
 
@@ -23,10 +28,35 @@ from saltci.exceptions import SaltCIStartupException
 log = logging.getLogger(__name__)
 
 
+# ----- Custom SQLAlchemy Types ----------------------------------------------------------------->
+class UTCDatetime(TypeDecorator):
+    impl = SaDateTime
+
+    def process_bind_param(self, value, dialect):
+        '''
+        Let's make sure we story UTC datetime only.
+        '''
+        if isinstance(value, basestring):
+            value = iso8601.parse_date(value)
+        if value.tzinfo is not UTC:
+            value = value.astimezone(UTC)
+        return value
+
+    def process_result_value(self, value, dialect):
+        return value
+#pylint: enable-checker
+# <---- Custom SQLAlchemy Types ------------------------------------------------------------------
+
+
 class SQLAlchemy(SQLAlchemyBase):
 
     repository_id   = 'Salt-CI DB Schema'
     repository_path = path.join(path.dirname(__file__), 'upgrades')
+
+
+    # ----- Custom Column Types ----------------------------------------------------------------->
+    UTCDatetime = UTCDatetime
+    # <---- Custom Column Types ------------------------------------------------------------------
 
     def init_app(self, app):
         log.debug("Initializing Flask-SQLAlchemy")
@@ -36,6 +66,7 @@ class SQLAlchemy(SQLAlchemyBase):
             )
 
         super(SQLAlchemy, self).init_app(app)
+        # Store our custom type
         self.app = app
 
     def update_dbentry_from_form(self, dbentry, form):
