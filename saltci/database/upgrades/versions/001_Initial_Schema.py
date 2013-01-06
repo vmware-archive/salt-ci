@@ -117,6 +117,77 @@ group_privileges = db.Table(
 )
 
 
+class Organization(Model):
+    __tablename__ = 'organizations'
+
+    id            = db.Column('github_id', db.Integer, primary_key=True)
+    name          = db.Column('github_name', db.String)
+    login         = db.Column('github_login', db.String, index=True)
+
+    # Relationships
+    accounts      = db.relation("Account", secondary="account_organizations",
+                                backref='organizations', lazy=True, collection_class=set,
+                                cascade='all, delete')
+
+    repositories  = db.relation("Repository", secondary="organization_repositories",
+                                backref='organization', lazy=True, cascade='all, delete')
+
+
+account_organizations = db.Table(
+    'account_organizations', metadata,
+    db.Column('account_id', db.Integer, db.ForeignKey('accounts.github_id')),
+    db.Column('organization_id', db.Integer, db.ForeignKey('organizations.github_id'))
+)
+
+
+class Repository(Model):
+    __tablename__ = 'repositories'
+
+    id            = db.Column('github_id', db.Integer, primary_key=True)
+    name          = db.Column('github_name', db.String, index=True)
+    url           = db.Column('github_url', db.String)
+    description   = db.Column('github_description', db.String)
+    fork          = db.Column('github_fork', db.Boolean, default=False)
+    private       = db.Column('github_private', db.Boolean, default=False)
+    active        = db.Column(db.Boolean, default=True)
+
+
+account_repositories = db.Table(
+    'account_repositories', metadata,
+    db.Column('account_id', db.Integer, db.ForeignKey('accounts.github_id')),
+    db.Column('repository_id', db.Integer, db.ForeignKey('repositories.github_id'))
+)
+
+
+organization_repositories =  db.Table(
+    'organization_repositories', metadata,
+    db.Column('organization_id', db.Integer, db.ForeignKey('organizations.github_id')),
+    db.Column('repository_id', db.Integer, db.ForeignKey('repositories.github_id'))
+)
+
+
+repository_administrators =  db.Table(
+    'repository_administrators', metadata,
+    db.Column('repository_id', db.Integer, db.ForeignKey('repositories.github_id')),
+    db.Column('account_id', db.Integer, db.ForeignKey('accounts.github_id'))
+)
+
+
+class Commit(Model):
+    __tablename__   = 'commits'
+    sha             = db.Column(db.String(40), primary_key=True)
+    ref             = db.Column(db.String)
+    message         = db.Column(db.String)
+    url             = db.Column(db.String(2000))
+    compare_url     = db.Column(db.String(2000))
+    commited_at     = db.Column(db.UTCDatetime)
+    committer_name  = db.Column(db.String)
+    committer_email = db.Column(db.String(254))
+    author_name     = db.Column(db.String)
+    author_email    = db.Column(db.String(254))
+    repository_id   = db.Column(db.Integer, db.ForeignKey('repositories.github_id'))
+
+
 def upgrade(migrate_engine):
     # Upgrade operations go here. Don't create your own engine; bind
     # migrate_engine to your metadata
@@ -152,6 +223,34 @@ def upgrade(migrate_engine):
         log.info("Creating group_privileges table")
         group_privileges.create(migrate_engine)
 
+    if not migrate_engine.has_table(Organization.__tablename__):
+        log.info('Creating organizations table')
+        Organization.__table__.create(migrate_engine)
+
+    if not migrate_engine.has_table(account_organizations.name):
+        log.info('Creating account_organizations table')
+        account_organizations.create(migrate_engine)
+
+    if not migrate_engine.has_table(Repository.__tablename__):
+        log.info('Creating repositories table')
+        Repository.__table__.create(migrate_engine)
+
+    if not migrate_engine.has_table(account_repositories.name):
+        log.info('Creating account_repositories table')
+        account_repositories.create(migrate_engine)
+
+    if not migrate_engine.has_table(organization_repositories.name):
+        log.info('Creating organization_repositories table')
+        organization_repositories.create(migrate_engine)
+
+    if not migrate_engine.has_table(repository_administrators.name):
+        log.info('Creating repository_administrators table')
+        repository_administrators.create(migrate_engine)
+
+    if not migrate_engine.has_table(Commit.__tablename__):
+        log.info('Creating commits table')
+        Commit.__table__.create(migrate_engine)
+
     admins = Group('Administrators')
     admins.privileges.add(Privilege('administrator'))
     session.add(admins)
@@ -159,6 +258,7 @@ def upgrade(migrate_engine):
     managers = Group('Managers')
     managers.privileges.add(Privilege('manager'))
     session.add(managers)
+    session.commit()
 
 
 def downgrade(migrate_engine):

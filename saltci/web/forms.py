@@ -117,3 +117,14 @@ class DBBoundForm(FormBase):
                 self._fields[name].value_from_db = fields[name] = value
         fields.update(kwargs)
         super(DBBoundForm, self).process(formdata, *args, **fields)
+
+
+class MultiCheckboxField(SelectMultipleField):
+    '''
+    A multiple-select, except displays a list of checkboxes.
+
+    Iterating the field will produce subfields, allowing custom rendering of
+    the enclosed checkbox fields.
+    '''
+    widget = ListWidget(prefix_label=False)
+    option_widget = CheckboxInput()

@@ -7,6 +7,7 @@
     </a>
     <ul class="dropdown-menu">
       <li><a href="{{ url_for('account.prefs') }}">{% trans %}Preferences{% endtrans %}</a></li>
+      <li><a href="{{ url_for('account.repos') }}">{% trans %}Repositories{% endtrans %}</a></li>
       <li><a href="{{ url_for('account.signout') }}">{% trans %}Sign-Out{% endtrans %}</a></li>
     </ul>
   {% else %}

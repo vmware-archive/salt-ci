@@ -19,7 +19,7 @@ from flask.ext.wtf import *
 from saltci.web.application import *
 from saltci.web.forms import *
 from saltci.database import db
-from saltci.database.models import Account
+from saltci.database.models import Account, Organization, Repository
 
 
 log = logging.getLogger(__name__)
@@ -65,6 +65,19 @@ class ProfileForm(DBBoundForm):
 #            # rendered. Re-set the default.
 #            self.locale.data = self.db_entry.locale
 #        return super(ProfileForm, self).validate()
+
+class RepositoriesForm(DBBoundForm):
+
+    title           = _('Repositories')
+
+    #repositories    = QuerySelectMultipleField(_('Repositories'))
+
+    update          = PrimarySubmitField(_('Update Repositories'))
+    sync_repos      = SubmitField(_('Synchronise Repositories'))
+
+    #def __init__(self, db_entry=None, formdata=None, *args, **kwargs):
+    #    super(RepositoriesForm, self).__init__(db_entry, formdata, *args, **kwargs)
+    #    self.repositories.query = db_entry.repositories
 # <---- Forms ------------------------------------------------------------------------------------
 
 
@@ -89,7 +102,7 @@ def signin():
 
     urlargs = {
         'state': github_state,
-        # 'scopes': 'repo:status', # for let's only get the basic scope
+        'scopes': 'user,repo:status',
         'client_id': app.config.get('GITHUB_CLIENT_ID'),
         'redirect_uri': url_for('account.callback', _external=True)
     }
@@ -177,4 +190,141 @@ def prefs():
         flash(_('Account details updated.'), 'success')
         return redirect_to('account.prefs')
     return render_template('account/prefs.html', form=form)
+
+
+@account.route('/repositories', methods=('GET', 'POST'))
+@authenticated_permission.require(403)
+def repos():
+    form = RepositoriesForm(db_entry=g.identity.account, formdata=request.form.copy())
+    if form.validate_on_submit():
+        if 'sync_repos' in request.values:
+            current_organizations = set(g.identity.account.organizations)
+            current_repositories = set(g.identity.account.repositories.all())
+            # Grab all repositories from GitHub and sync our database against them
+            gh = github.Github(session['ght'])
+            account = gh.get_user()
+            for org in account.get_orgs():
+                organization = Organization.query.get(org.id)
+                if organization is None:
+                    # We do not yet know this organization, let's add it to the database
+                    organization = Organization(org.id, org.name, org.login)
+                    # Let's add ourselves to this organization
+                    g.identity.account.organizations.add(organization)
+                else:
+                    if organization in current_organizations:
+                        # We already know this organization and we're in it, remove from the
+                        # check-list.
+                        current_organizations.remove(organization)
+                org_repositories = set(organization.repositories)
+                for repo in org.get_repos():
+                    if repo.permissions.admin is False:
+                        # Since we can't administrate this repository, skip it
+                        continue
+                    repository = Repository.query.get(repo.id)
+                    if repository is None:
+                        repository = Repository(
+                            id=repo.id,
+                            name=repo.name,
+                            url=repo.html_url,
+                            description=repo.description,
+                            fork=repo.fork,
+                            private=repo.private,
+                            active=False
+                        )
+                        organization.repositories.add(repository)
+                    else:
+                        # Let's update entry
+                        repository.name = repo.name
+                        repository.url = repo.html_url
+                        repository.fork = repo.fork
+                        repository.description = repo.description
+                        repository.private = repo.private
+                        if repository not in organization.repositories:
+                            # Although we already know this repository, it's now owned by this
+                            # organization.
+                            organization.repositories.add(repository)
+                        if repository in org_repositories:
+                            # remove it from the check-list
+                            org_repositories.remove(repository)
+                        if repository in current_repositories:
+                            # let's remove it from the check-list
+                            current_repositories.remove(repository)
+                    g.identity.account.managed_repositories.add(repository)
+                for org in current_organizations:
+                    # We apparently left some organizations:
+                    g.identity.account.organizations.remove(org)
+                for repository in org_repositories:
+                    # The organization is apparently not managing these repositories anymore
+                    org.repositories.remove(repository)
+                db.session.commit()
+            for repo in account.get_repos():
+                if repo.permissions.admin is False:
+                    # WTF!?
+                    # Since we can't administrate this repository, skip it
+                    continue
+                repository = Repository.query.get(repo.id)
+                if repository is None:
+                    repository = Repository(
+                        id=repo.id,
+                        name=repo.name,
+                        url=repo.html_url,
+                        description=repo.description,
+                        fork=repo.fork,
+                        private=repo.private,
+                        active=False
+                    )
+                    g.identity.account.repositories.append(repository)
+                else:
+                    # Let's update entry
+                    repository.name = repo.name
+                    repository.url = repo.html_url
+                    repository.description = repo.description
+                    repository.organization = repo.organization
+                    repository.private = repo.private
+                    if repository not in g.identity.account.repositories:
+                        g.identity.account.repositories.add(repository)
+                    if repository in current_repositories:
+                        # let's remove it from the check-list
+                        current_repositories.remove(repository)
+                g.identity.account.managed_repositories.add(repository)
+            for repository in current_repositories:
+                # We're apparently not managing these
+                g.identity.account.repositories.remove(repository)
+                g.identity.account.managed_repositories.remove(repository)
+            db.session.commit()
+            return redirect_to('account.repos')
+
+        # We're updating, the active status
+        active = []
+        inactive = []
+        for key, value in request.form.iteritems():
+            if not key.startswith('active.'):
+                continue
+
+            repos_id = int(key.split('.', 1)[-1])
+            if int(value) > 0:
+                active.append(repos_id)
+            else:
+                inactive.append(repos_id)
+        # Let's update the repositories to the new state
+        Repository.query.filter(Repository.id.in_(active)).update(
+            {'active': True}, synchronize_session=False
+        )
+        Repository.query.filter(Repository.id.in_(inactive)).update(
+            {'active': False}, synchronize_session=False
+        )
+        db.session.commit()
+        return redirect_to('account.repos')
+
+    # We're not updating anything, just show them the data
+    own_repos = g.identity.account.repositories.filter(Repository.fork == False).all()
+    fork_repos = g.identity.account.repositories.filter(Repository.fork == True).all()
+    orgs = {}
+    for org in g.identity.account.organizations:
+        for repo in org.repositories:
+            if g.identity.account in repo.admins:
+                orgs.setdefault(org.name, []).append(repo)
+    return render_template(
+        'account/repos.html', own_repos=own_repos, fork_repos=fork_repos, org_repos=orgs, form=form
+    )
 # <---- Views ------------------------------------------------------------------------------------
