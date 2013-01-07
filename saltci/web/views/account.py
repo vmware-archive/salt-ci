@@ -27,6 +27,18 @@ log = logging.getLogger(__name__)
 
 # ----- Blueprints & Menu Entries -------------------------------------------------------------->
 account = Blueprint('account', __name__, url_prefix='/account')
+
+prefs_menu_entry = menus.add_menu_entry(
+    "top_account_nav", _("Profile"), 'account.prefs', priority=-1,
+    visiblewhen=check_wether_account_is_not_none
+)
+account_view_nav.add_menu_item(prefs_menu_entry)
+
+repos_menu_entry = menus.add_menu_entry(
+    "top_account_nav", _("Repositories"), 'account.repos', priority=-1,
+    visiblewhen=check_wether_account_is_not_none
+)
+account_view_nav.add_menu_item(repos_menu_entry)
 # <---- Blueprints & Menu Entries ---------------------------------------------------------------
 
 

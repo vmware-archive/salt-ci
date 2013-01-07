@@ -4,16 +4,22 @@
 {% block title %}{{ form.title }}{% endblock %}
 
 {% block contents %}
+  {% block before_form %}{% endblock %}
   <form method="POST" action="">
     <fieldset>
+      {% block form_legend -%}
       <legend>{{ form.title }}</legend>
+      {%- endblock %}
+
       {{ form.hidden_tag() }}
+
       {% block form_contents %}{% endblock %}
       <div class="form-actions">
         {% block form_actions %}{% endblock %}
       </div>
     </fieldset>
   </form>
+  {% block after_form %}{% endblock %}
 {% endblock %}
 
 {% block footer %}

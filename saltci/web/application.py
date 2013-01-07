@@ -17,6 +17,7 @@ from flask import (
 from flask.signals import request_started, request_finished
 from flask.ext.babel import Babel, get_locale, gettext as _
 from flask.ext.cache import Cache
+from flask.ext.menubuilder import MenuBuilder, MenuItem, MenuItemContent
 from flask.ext.principal import Principal
 from urlparse import urlparse, urljoin
 from werkzeug.contrib.fixers import ProxyFix
@@ -44,7 +45,15 @@ __all__ = [
     'babel',
     '_',
     'get_locale',
-    'cache'
+    'cache',
+    # Navigation Related Items
+    'menus',
+    'MenuItem',
+    'MenuItemContent',
+    'top_account_nav',
+    'account_view_nav',
+    'check_wether_account_is_none',
+    'check_wether_account_is_not_none'
 ] + ALL_PERMISSIONS_IMPORTS
 # <---- Simplify * Imports -----------------------------------------------------------------------
 
@@ -59,6 +68,10 @@ babel = Babel(app)
 
 # Cache support
 cache = Cache(app)
+
+# Navigation Menu's Support
+menus = MenuBuilder(app)
+
 
 @configuration_loaded.connect
 def on_configuration_loaded(config):
@@ -81,6 +94,25 @@ def on_configuration_loaded(config):
     # Application is configured, signal it
     application_configured.send(app)
 # <---- Setup The Flask application --------------------------------------------------------------
+
+
+# ----- Setup The Web-Application Navigation ---------------------------------------------------->
+def check_wether_account_is_none(menu_item):
+    return g.identity.account is None
+
+
+def check_wether_account_is_not_none(menu_item):
+    return g.identity.account is not None
+
+
+top_account_nav = menus.add_menu("top_account_nav", classes="dropdown-menu")
+account_view_nav = menus.add_menu("account_view_nav", classes="nav nav-tabs")
+
+menus.add_menu_entry(
+    "top_account_nav", _("Sign-Out"), 'account.signout', priority=100,
+    visiblewhen=check_wether_account_is_not_none
+)
+# <---- Setup The Web-Application Navigation -----------------------------------------------------
 
 
 # ----- Some Useful Helpers --------------------------------------------------------------------->

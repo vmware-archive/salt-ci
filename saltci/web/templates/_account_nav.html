@@ -5,11 +5,7 @@
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
     {{ render_gravatar_img(28) }} {{ g.identity.account.gh_login }}<b class="caret"></b>
     </a>
-    <ul class="dropdown-menu">
-      <li><a href="{{ url_for('account.prefs') }}">{% trans %}Preferences{% endtrans %}</a></li>
-      <li><a href="{{ url_for('account.repos') }}">{% trans %}Repositories{% endtrans %}</a></li>
-      <li><a href="{{ url_for('account.signout') }}">{% trans %}Sign-Out{% endtrans %}</a></li>
-    </ul>
+    {{ menubuilder.render('top_account_nav') }}
   {% else %}
   <a href="{{ url_for('account.signin') }}">
     <button class="btn btn-info">{% trans %}Sign-In{% endtrans %}</button>
