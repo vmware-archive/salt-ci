@@ -1,6 +1,16 @@
 {% extends "account/layout.html" %}
 
-{% macro render_repos_tbody(repos) %}
+{% macro render_repos_table(repos) %}
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Private</th>
+      <th alt="Foo">Push</th>
+      <th alt="bar">Pull</th>
+    </tr>
+  </thead>
   <tbody>
     {% for repo in repos %}
     <tr>
@@ -8,55 +18,60 @@
       <td>{{ repo.description }}</td>
       <td>{{ repo.private }}</td>
       <td{% if repo.private %} class="warning"{% endif %}>
-        <label class="radio inline">
-          <input name="active.{{ repo.id }}" type="radio" value="1"{% if repo.active %} checked{% endif %}>Yes
-        </label>
-        <label class="radio inline">
-          <input name="active.{{ repo.id }}" type="radio" value="0"{% if not repo.active %} checked{% endif %}>No
-        </label>
+        <input name="push_active" type="checkbox" value="{{ repo.id }}"{% if repo.push_active %} checked{% endif %}>
+      </td>
+      <td{% if repo.private %} class="warning"{% endif %}>
+        <input name="pull_active" type="checkbox" value="{{ repo.id }}"{% if repo.pull_active %} checked{% endif %}>
       </td>
     </tr>
     {% endfor %}
   </tbody>
+</table>
 {% endmacro %}
 
 {% block form_contents %}
-<table class="table table-striped table-hover">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Private</th>
-      <th>Active</th>
-    </tr>
-  </thead>
-  {% if own_repos %}
-  {{ render_repos_tbody(own_repos) }}
-  {% endif %}
-  {% if fork_repos %}
-  <thead>
-    <tr class="info">
-      <th colspan="4">Forked Repositories</th>
-    </tr>
-  </thead>
-  {{ render_repos_tbody(fork_repos) }}
-  {% endif %}
-  {% if org_repos %}
-  <thead>
-    <tr class="info">>
-      <th colspan="4">Organization Repositories</th>
-    </tr>
-  </thead>
-  {% for (org, repos) in org_repos.iteritems() %}
-  <thead>
-    <tr class="info">>
-      <th colspan="4">{{ org }}</th>
-    </tr>
-  </thead>
-  {{ render_repos_tbody(repos) }}
-  {% endfor %}
-  {% endif %}
-</table>
+<div class="tabbable">
+  <ul class="nav nav-tabs">
+    <li class="active">
+      <a href="#your-repos" data-toggle="tab">{{ _('Your Respositories') }}</a>
+    </li>
+    <li>
+      <a href="#forked-repos" data-toggle="tab">{{ _('Forked Repositories') }}</a>
+    </li>
+    <li>
+      <a href="#org-repos" data-toggle="tab">{{ _('Organization Repositories') }}</a>
+    </li> 
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="your-repos">
+      {% if own_repos -%}
+      {{ render_repos_table(own_repos) }}
+      {%- endif %}
+    </div>
+    <div class="tab-pane" id="forked-repos">
+      {% if fork_repos -%}
+      {{ render_repos_table(fork_repos) }}
+      {%- endif %}
+    </div>
+
+    <div class="tab-pane" id="org-repos">
+      {% if g.identity.account.organizations %}
+      <ul class="nav nav-tabs">
+      {% for org in g.identity.account.organizations %}
+        <li{% if loop.first %} class="active"{% endif %}>
+          <a href="#org-repo-{{ org.login }}" data-toggle="tab">{{ org.name }}</a>
+        </li>
+      {% endfor %}
+      </ul>
+      {% for org in g.identity.account.organizations %}
+      <div class="tab-pane{% if loop.first %} active{% endif %}" id="org-repo-{{ org.login }}">
+        {{ render_repos_table(org.repositories) }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
 {%- endblock %}
 
 {% block form_actions %}

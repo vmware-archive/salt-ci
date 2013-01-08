@@ -240,7 +240,7 @@ def on_404(error):
 # ----- Setup Babel Selectors ------------------------------------------------------------------->
 @babel.localeselector
 def get_locale():
-    if g.identity.account is not None:
+    if hasattr(g.identity, 'account') and g.identity.account is not None:
         # Return the user's preferred locale
         return g.identity.account.locale
 
@@ -254,7 +254,7 @@ def get_locale():
 
 @babel.timezoneselector
 def get_timezone():
-    if g.identity.account is None:
+    if not hasattr(g.identity, 'account') or  g.identity.account is None:
         # No user is logged in, return the app's default timezone
         return app.config.get('BABEL_DEFAULT_LOCALE', 'UTC')
     # Return the user's preferred timezone

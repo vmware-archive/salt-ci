@@ -51,8 +51,7 @@ class Account(db.Model):
     gh_id           = db.Column('github_id', db.Integer, primary_key=True)
     gh_login        = db.Column('github_login', db.String(100))
     gh_token        = db.Column('github_access_token', db.String(100), index=True)
-    gravatar_id     = db.Column(db.String(32))
-    hooks_token     = db.Column(db.String(32), index=True, default=lambda: uuid4().hex)
+    avatar_url      = db.Column(db.String(2000))
     last_login      = db.Column(db.DateTime, default=datetime.utcnow)
     register_date   = orm.deferred(db.Column(db.DateTime, default=datetime.utcnow))
     locale          = db.Column(db.String(10), default=lambda: 'en')
@@ -69,18 +68,14 @@ class Account(db.Model):
 
     query_class     = AccountQuery
 
-    def __init__(self, github_id, github_login, github_token, gravatar_id):
-        self.gh_id = github_id
-        self.gh_login = github_login
-        self.gh_token = github_token
-        self.gravatar_id = gravatar_id
+    def __init__(self, gh_id=None, gh_login=None, gh_token=None, avatar_url=None):
+        self.gh_id = gh_id
+        self.gh_login = gh_login
+        self.gh_token = gh_token
+        self.avatar_url = avatar_url
 
     def update_last_login(self):
         self.last_login = datetime.utcnow()
-
-    def generate_hooks_token(self):
-        log.info('Generating hooks token for user id: {0}'.format(self.gh_login))
-        self.hooks_token = uuid4().hex
 
 
 class PrivilegeQuery(orm.Query):
@@ -192,6 +187,7 @@ class Organization(db.Model):
     id            = db.Column('github_id', db.Integer, primary_key=True)
     name          = db.Column('github_name', db.String)
     login         = db.Column('github_login', db.String, index=True)
+    avatar_url    = db.Column(db.String(2000))
 
     # Relationships
     accounts      = db.relation("Account", secondary="account_organizations",
@@ -206,10 +202,11 @@ class Organization(db.Model):
 
     query_class   = OrganizationQuery
 
-    def __init__(self, id, name, login):
+    def __init__(self, id, name, login, avatar_url):
         self.id = id
         self.name = name
         self.login = login
+        self.avatar_url = avatar_url
 
 
 # pylint: disable-msg=C0103
@@ -222,7 +219,7 @@ account_organizations = db.Table(
 
 
 class Repository(db.Model):
-    __tablename__ = 'repositories'
+    __tablename__   = 'repositories'
 
     id              = db.Column('github_id', db.Integer, primary_key=True)
     name            = db.Column('github_name', db.String, index=True)
@@ -230,7 +227,8 @@ class Repository(db.Model):
     description     = db.Column('github_description', db.String)
     fork            = db.Column('github_fork', db.Boolean, default=False)
     private         = db.Column('github_private', db.Boolean, default=False)
-    active          = db.Column(db.Boolean, default=True)
+    push_active     = db.Column(db.Boolean, default=True)
+    pull_active     = db.Column(db.Boolean, default=True)
 
     # Relationships
     owner           = None    # Defined in account
@@ -242,27 +240,15 @@ class Repository(db.Model):
                                 ),  lazy=True, collection_class=set, cascade='all, delete')
 
     def __init__(self, id, name, url, description,
-                 fork=False, private=False, active=True):
-        '''
-        Repository
-
-        :param id: repository id
-        :param name: repository name
-        :param url: repository url
-        :param description: repository description
-        :param fork: is this a forked repository
-        :param private: is the repository private
-        :param active: is the repository active
-        :returns: Repository
-
-        '''
+                 fork=False, private=False, push_active=True, pull_active=True):
         self.id = id
         self.name = name
         self.url = url
         self.description = description
         self.fork = fork
         self.private = private
-        self.active = active
+        self.push_active = push_active
+        self.pull_active = pull_active
 
 
 # pylint: disable-msg=C0103
@@ -304,20 +290,6 @@ class Commit(db.Model):
 
     def __init__(self, sha, ref, message, url, compare_url, commited_at, commiter_name,
                  commiter_email, author_name, author_email):
-        '''
-        :param sha: @todo
-        :param ref: @todo
-        :param message: @todo
-        :param url: @todo
-        :param compare_url: @todo
-        :param commited_at: @todo
-        :param commiter_name: @todo
-        :param commiter_email: @todo
-        :param author_name: @todo
-        :param author_email: @todo
-        :returns: @todo
-
-        '''
         self.sha = sha
         self.ref = ref
         self.message = message

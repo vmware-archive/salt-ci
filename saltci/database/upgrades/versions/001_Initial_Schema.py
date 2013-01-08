@@ -45,8 +45,7 @@ class Account(Model):
     gh_id           = db.Column('github_id', db.Integer, primary_key=True)
     gh_login        = db.Column('github_login', db.String(100))
     gh_token        = db.Column('github_access_token', db.String(100), index=True)
-    gravatar_id     = db.Column(db.String(32))
-    hooks_token     = db.Column(db.String(32), index=True, default=lambda: uuid4().hex)
+    avatar_url      = db.Column(db.String(2000))
     last_login      = db.Column(db.DateTime, default=datetime.utcnow)
     register_date   = orm.deferred(db.Column(db.DateTime, default=datetime.utcnow))
     locale          = db.Column(db.String(10), default=lambda: 'en')
@@ -123,6 +122,7 @@ class Organization(Model):
     id            = db.Column('github_id', db.Integer, primary_key=True)
     name          = db.Column('github_name', db.String)
     login         = db.Column('github_login', db.String, index=True)
+    avatar_url    = db.Column(db.String(2000))
 
     # Relationships
     accounts      = db.relation("Account", secondary="account_organizations",
@@ -149,7 +149,8 @@ class Repository(Model):
     description   = db.Column('github_description', db.String)
     fork          = db.Column('github_fork', db.Boolean, default=False)
     private       = db.Column('github_private', db.Boolean, default=False)
-    active        = db.Column(db.Boolean, default=True)
+    push_active   = db.Column(db.Boolean, default=True)
+    pull_active   = db.Column(db.Boolean, default=True)
 
 
 account_repositories = db.Table(
