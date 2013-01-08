@@ -282,7 +282,7 @@ def repos():
                     g.identity.account.organizations.remove(org)
                 for repository in org_repositories:
                     # The organization is apparently not managing these repositories anymore
-                    org.repositories.remove(repository)
+                    organization.repositories.remove(repository)
                 db.session.commit()
             for repo in account.get_repos():
                 if repo.permissions.admin is False:
