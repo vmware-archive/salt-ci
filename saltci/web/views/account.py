@@ -114,7 +114,7 @@ def signin():
 
     urlargs = {
         'state': github_state,
-        'scopes': 'user,repo:status',
+        'scopes': 'repo',
         'client_id': app.config.get('GITHUB_CLIENT_ID'),
         'redirect_uri': url_for('account.callback', _external=True)
     }
@@ -137,6 +137,7 @@ def callback():
     urlargs = {
         'code': code,
         'state': github_state,
+        'scopes': 'repo',
         'client_id': app.config.get('GITHUB_CLIENT_ID'),
         'client_secret': app.config.get('GITHUB_CLIENT_SECRET'),
     }
@@ -159,15 +160,27 @@ def callback():
 
         account = Account.query.from_github_token(token)
         if account is None:
+            # We do not know this token.
             gh = github.Github(token)
             gh_user = gh.get_user()
-            new_account = Account(
-                github_id=gh_user.id,
-                github_login=gh_user.login,
-                github_token=token,
-                gravatar_id=gh_user.gravatar_id
-            )
-            db.session.add(new_account)
+            # Do we know the account?
+            account = Account.query.get(gh_user.id)
+            if account is None:
+                # This is a brand new account
+                new_account = Account(
+                    github_id=gh_user.id,
+                    github_login=gh_user.login,
+                    github_token=token,
+                    gravatar_id=gh_user.gravatar_id
+                )
+                db.session.add(new_account)
+            else:
+                # We know this account though the access token has changed.
+                # Let's update the account details.
+                account.gh_id = gh_user.id
+                account.gh_login = gh_user.login
+                account.gh_token = token
+                account.gravatar_id = gh_user.gravatar_id
             db.session.commit()
 
         identity_changed.send(app, identity=Identity(token, 'dbm'))
