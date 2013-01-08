@@ -307,7 +307,6 @@ def repos():
                     repository.name = repo.name
                     repository.url = repo.html_url
                     repository.description = repo.description
-                    repository.organization = repo.organization
                     repository.private = repo.private
                     if repository not in g.identity.account.repositories:
                         g.identity.account.repositories.add(repository)
