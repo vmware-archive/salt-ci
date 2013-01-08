@@ -6,21 +6,6 @@
 {% if form.locale.choices|length > 1 -%}
 {{ render_field(form.locale) }}
 {%- endif %}
-<div class="control-group{% if form.hooks_token.errors %} error{% endif %}">
-  <label class="control-label">{{ form.hooks_token.label }}</label>
-  <div class="controls">
-    {{ form.hooks_token(class_=form.hooks_token.errors and 'error' or '') }}
-    <div class="input-append">
-      <span class="input-xlarge uneditable-input">{{ form.hooks_token._value() }}</span>
-      <button id="gen_token" name="gen-token" class="btn" type="submit" value="gen_token">
-        {{ form.gen_token.label.text }}
-      </button>
-    </div>
-    <span class="help-block"><small>{{-
-        url_for('hooks.push', token=g.identity.account.hooks_token, _external=True)
-    -}}</small></span>
-  </div>
-</div>
 {% endblock %}
 
 {% block form_actions %}
