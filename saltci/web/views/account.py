@@ -380,79 +380,46 @@ def repos():
             for repo in active_on_form_not_on_db:
                 repo.push_active = True
 
+        pull_active = request.form.getlist('pull_active', type=int)
+        if not pull_active and g.identity.account.repositories.filter(Repository.pull_active==True).count():
+            # Disable all enabled
+            for repo in g.identity.account.repositories.filter(Repository.pull_active==True):
+                repo.pull_active = False
+        elif pull_active and not g.identity.account.repositories.filter(Repository.pull_active==True).count():
+            # There's none enabled, no enable/disable sync needed. Just enable those from the form
+            for repo in g.identity.account.repositories.filter(Repository.id.in_(pull_active)):
+                repo.pull_active = True
+        else:
+            # We need to sync, setting all to disable and then enable those that were passed to the
+            # form might become too expensive.
+            # Let's do it the proper way.
+            #
+            # First those enabled on the database and now disabled from the form
+            db_enabled_not_on_form = g.identity.account.repositories.filter(
+                db.and_(
+                    db.not_(Repository.id.in_(pull_active)),
+                    Repository.pull_active==True
+                )
+            )
+            for repo in db_enabled_not_on_form:
+                repo.pull_active = False
 
+            active_on_form_not_on_db = g.identity.account.repositories.filter(
+                db.and_(
+                    Repository.id.in_(pull_active),
+                    Repository.pull_active==False
+                )
+            )
+            for repo in active_on_form_not_on_db:
+                repo.pull_active = True
 
-        #pull_active = request.form.getlist('pull_active', type=int)
-        #if not pull_active and g.identity.account.repositories.filter(Repository.pull_active==True).count():
-        #    # Disable all enabled
-        #    g.identity.account.repositories.filter(Repository.pull_active==True).update(
-        #        {'pull_active': False}, synchronize_session=False
-        #    )
-        #elif pull_active and not g.identity.account.repositories.filter(Repository.pull_active==True).count():
-        #    # There's none enabled, no enable/disable sync needed. Just enable those from the form
-        #    g.identity.account.repositories.filter(Repository.id.in_(pull_active)).update(
-        #        {'pull_active': True}, synchronize_session=False
-        #    )
-        #else:
-        #    # We need to sync, setting all to disable and then enable those that were passed to the
-        #    # form might become too expensive.
-        #    # Let's do it the proper way.
-        #    #
-        #    # First those enabled on the database and now disabled from the form
-        #    g.identity.account.repositories.filter(
-        #        db.and_(
-        #            db.not_(Repository.id.in_(pull_active)),
-        #            Repository.pull_active==True
-        #        )
-        #    ).update(
-        #        {'pull_active': False}, synchronize_session=False
-        #    )
-        #    # Then those which are active on the form but not yet active on the database
-        #    g.identity.account.repositories.filter(
-        #        db.and_(
-        #            Repository.id.in_(pull_active),
-        #            Repository.pull_active==False
-        #        )
-        #    ).update(
-        #        {'pull_active': True}, synchronize_session=False
-        #    )
-
-        print 789, 'push_active', push_active
-        #print 987, 'pull_active', pull_active
-
-        db.session.commit()
-        return redirect_to('account.repos')
-
-        active = []
-        inactive = []
-        for key, value in request.form.iteritems():
-            if not key.startswith('active.'):
-                continue
-
-            repos_id = int(key.split('.', 1)[-1])
-            if int(value) > 0:
-                active.append(repos_id)
-            else:
-                inactive.append(repos_id)
-        # Let's update the repositories to the new state
-        Repository.query.filter(Repository.id.in_(active)).update(
-            {'active': True}, synchronize_session=False
-        )
-        Repository.query.filter(Repository.id.in_(inactive)).update(
-            {'active': False}, synchronize_session=False
-        )
         db.session.commit()
         return redirect_to('account.repos')
 
     # We're not updating anything, just show them the data
     own_repos = g.identity.account.repositories.filter(Repository.fork == False).all()
     fork_repos = g.identity.account.repositories.filter(Repository.fork == True).all()
-    orgs = {}
-    for org in g.identity.account.organizations:
-        for repo in org.repositories:
-            if g.identity.account in repo.admins:
-                orgs.setdefault(org.name, []).append(repo)
     return render_template(
-        'account/repos.html', own_repos=own_repos, fork_repos=fork_repos, org_repos=orgs, form=form
+        'account/repos.html', own_repos=own_repos, fork_repos=fork_repos, form=form
     )
 # <---- Views ------------------------------------------------------------------------------------
