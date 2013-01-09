@@ -7,8 +7,8 @@
       <th>Name</th>
       <th>Description</th>
       <th>Private</th>
-      <th alt="Foo">Push</th>
-      <th alt="bar">Pull</th>
+      <th title="{{ _('Enable Builds On Git Push') }}">Push</th>
+      <th title="{{ _('Enable Builds On Pull Requests') }}">Pull</th>
     </tr>
   </thead>
   <tbody>
@@ -18,10 +18,12 @@
       <td>{{ repo.description }}</td>
       <td>{{ repo.private }}</td>
       <td{% if repo.private %} class="warning"{% endif %}>
-        <input name="push_active" type="checkbox" value="{{ repo.id }}"{% if repo.push_active %} checked{% endif %}>
+        <input title="{{ _('Enable Builds On Git Push') }}" name="push_active"
+               type="checkbox" value="{{ repo.id }}"{% if repo.push_active %} checked{% endif %}>
       </td>
       <td{% if repo.private %} class="warning"{% endif %}>
-        <input name="pull_active" type="checkbox" value="{{ repo.id }}"{% if repo.pull_active %} checked{% endif %}>
+        <input  title="{{ _('Enable Builds On Pull Requests') }}" name="pull_active"
+                type="checkbox" value="{{ repo.id }}"{% if repo.pull_active %} checked{% endif %}>
       </td>
     </tr>
     {% endfor %}

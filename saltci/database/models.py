@@ -38,12 +38,13 @@ class SchemaVersion(db.Model):
 
 class AccountQuery(db.Query):
 
+    def get(self, id_or_login):
+        if isinstance(id_or_login, basestring):
+            return self.filter(Account.gh_login == id_or_login).first()
+        return db.Query.get(id_or_login)
+
     def from_github_token(self, token):
         return self.filter(Account.gh_token == token).first()
-
-    def from_hooks_token(self, token):
-        return self.filter(Account.hooks_token == token).first()
-
 
 class Account(db.Model):
     __tablename__   = 'accounts'
@@ -63,7 +64,7 @@ class Account(db.Model):
                                   cascade='all, delete')
     groups          = None  # Defined on Group
     repositories    = db.dynamic_loader("Repository", secondary="account_repositories",
-                                        backref='owner', lazy=True, collection_class=set,
+                                        backref='owner', lazy=True, uselist=False,
                                         cascade='all, delete')
 
     query_class     = AccountQuery
@@ -197,7 +198,7 @@ class Organization(db.Model):
 
     repositories  = db.relation("Repository", secondary="organization_repositories",
                                 backref=db.backref(
-                                    'organization', lazy=True, collection_class=set
+                                    'organization', lazy=True, uselist=False
                                 ), lazy=True, collection_class=set, cascade='all, delete')
 
     query_class   = OrganizationQuery
