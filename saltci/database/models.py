@@ -236,7 +236,7 @@ class Repository(db.Model):
 
     admins        = db.relation("Account", secondary="repository_administrators",
                                 backref=db.backref(
-                                    'managed_repositories', lazy=True, collection_class=set
+                                    'managed_repositories', lazy='dynamic', collection_class=set
                                 ),  lazy=True, collection_class=set, cascade='all, delete')
 
     def __init__(self, id, name, url, description,

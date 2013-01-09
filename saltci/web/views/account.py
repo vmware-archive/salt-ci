@@ -318,20 +318,20 @@ def repos():
 
         # We're updating, the active status
         push_active = request.form.getlist('push_active', type=int)
-        if not push_active and g.identity.account.repositories.filter(Repository.push_active==True).count():
+        if not push_active and g.identity.account.managed_repositories.filter(Repository.push_active==True).count():
             # Disable all enabled
             #g.identity.account.repositories.filter(Repository.push_active==True).update(
             #    {'push_active': False}, synchronize_session=False
             #)
-            for repo in g.identity.account.repositories.filter(Repository.push_active==True):
+            for repo in g.identity.account.managed_repositories.filter(Repository.push_active==True):
                 repo.push_active = False
-        elif push_active and not g.identity.account.repositories.filter(Repository.push_active==True).count():
+        elif push_active and not g.identity.account.managed_repositories.filter(Repository.push_active==True).count():
             # There's none enabled, no enable/disable sync needed. Just enable those from the form
             #g.identity.account.repositories.filter(Repository.id.in_(push_active)).update(
             #    {'push_active': True}, synchronize_session=False
             #)
             # ^^^^ <- ArgumentError: Only update via a single table query is currently supported
-            for repo in g.identity.account.repositories.filter(Repository.id.in_(push_active)):
+            for repo in g.identity.account.managed_repositories.filter(Repository.id.in_(push_active)):
                 repo.push_active = True
         else:
             # We need to sync, setting all to disable and then enable those that were passed to the
@@ -347,7 +347,7 @@ def repos():
             #).update(
             #    {'push_active': False}, synchronize_session=False
             #)
-            db_enabled_not_on_form = g.identity.account.repositories.filter(
+            db_enabled_not_on_form = g.identity.account.managed_repositories.filter(
                 db.and_(
                     db.not_(Repository.id.in_(push_active)),
                     Repository.push_active==True
@@ -366,7 +366,7 @@ def repos():
             #    {'push_active': True}, synchronize_session=False
             #)
 
-            active_on_form_not_on_db = g.identity.account.repositories.filter(
+            active_on_form_not_on_db = g.identity.account.managed_repositories.filter(
                 db.and_(
                     Repository.id.in_(push_active),
                     Repository.push_active==False
@@ -376,13 +376,13 @@ def repos():
                 repo.push_active = True
 
         pull_active = request.form.getlist('pull_active', type=int)
-        if not pull_active and g.identity.account.repositories.filter(Repository.pull_active==True).count():
+        if not pull_active and g.identity.account.managed_repositories.filter(Repository.pull_active==True).count():
             # Disable all enabled
-            for repo in g.identity.account.repositories.filter(Repository.pull_active==True):
+            for repo in g.identity.account.managed_repositories.filter(Repository.pull_active==True):
                 repo.pull_active = False
-        elif pull_active and not g.identity.account.repositories.filter(Repository.pull_active==True).count():
+        elif pull_active and not g.identity.account.managed_repositories.filter(Repository.pull_active==True).count():
             # There's none enabled, no enable/disable sync needed. Just enable those from the form
-            for repo in g.identity.account.repositories.filter(Repository.id.in_(pull_active)):
+            for repo in g.identity.account.managed_repositories.filter(Repository.id.in_(pull_active)):
                 repo.pull_active = True
         else:
             # We need to sync, setting all to disable and then enable those that were passed to the
@@ -390,7 +390,7 @@ def repos():
             # Let's do it the proper way.
             #
             # First those enabled on the database and now disabled from the form
-            db_enabled_not_on_form = g.identity.account.repositories.filter(
+            db_enabled_not_on_form = g.identity.account.managed_repositories.filter(
                 db.and_(
                     db.not_(Repository.id.in_(pull_active)),
                     Repository.pull_active==True
@@ -399,7 +399,7 @@ def repos():
             for repo in db_enabled_not_on_form:
                 repo.pull_active = False
 
-            active_on_form_not_on_db = g.identity.account.repositories.filter(
+            active_on_form_not_on_db = g.identity.account.managed_repositories.filter(
                 db.and_(
                     Repository.id.in_(pull_active),
                     Repository.pull_active==False
