@@ -252,10 +252,34 @@ def upgrade(migrate_engine):
         log.info('Creating commits table')
         Commit.__table__.create(migrate_engine)
 
+    log.info('Adding the Administrators group')
     admins = Group('Administrators')
     admins.privileges.add(Privilege('administrator'))
     session.add(admins)
+    session.commit()
 
+    SALTSTACK_CORE_TEAM = (
+        (   4603,  u'SEJeff'     ),
+        (  89334,  u'herlo'      ),
+        (  91293,  u'whiteinge'  ),
+        ( 287147,  u'techhat'    ),
+        ( 300048,  u's0undt3ch'  ),
+        ( 306240,  u'UtahDave'   ),
+        ( 328598,  u'archtaku'   ),
+        ( 507599,  u'thatch45'   ),
+        ( 733988,  u'akoumjian'  ),
+        (1074925,  u'seanchannel'),
+    )
+    log.info('Adding SaltStack Core Team to the Administrators group')
+    for ctid, login in SALTSTACK_CORE_TEAM:
+        log.info('  * Adding {0}'.format(login))
+        migrate_engine.execute(
+            group_accounts.insert().values(
+                group_id=admins.id, account_github_id=ctid
+            )
+        )
+
+    log.info('Adding the Managers group')
     managers = Group('Managers')
     managers.privileges.add(Privilege('manager'))
     session.add(managers)

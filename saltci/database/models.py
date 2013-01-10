@@ -41,7 +41,7 @@ class AccountQuery(db.Query):
     def get(self, id_or_login):
         if isinstance(id_or_login, basestring):
             return self.filter(Account.gh_login == id_or_login).first()
-        return db.Query.get(id_or_login)
+        return db.Query.get(self, id_or_login)
 
     def from_github_token(self, token):
         return self.filter(Account.gh_token == token).first()
@@ -64,7 +64,8 @@ class Account(db.Model):
                                   cascade='all, delete')
     groups          = None  # Defined on Group
     repositories    = db.dynamic_loader("Repository", secondary="account_repositories",
-                                        backref='owner', lazy=True, uselist=False,
+                                        backref=db.backref('owner', lazy=True, uselist=False),
+                                        lazy=True, collection_class=set,
                                         cascade='all, delete')
 
     query_class     = AccountQuery
@@ -191,15 +192,26 @@ class Organization(db.Model):
     avatar_url    = db.Column(db.String(2000))
 
     # Relationships
-    accounts      = db.relation("Account", secondary="account_organizations",
+    accounts      = db.relation("Account",
+                                secondary="account_organizations",
                                 backref=db.backref(
-                                    'organizations', lazy=True, collection_class=set
-                                ), lazy=True, collection_class=set, cascade='all, delete')
+                                    'organizations',
+                                    lazy=True,
+                                    collection_class=set
+                                ),
+                                lazy=True,
+                                collection_class=set,
+                                cascade='all, delete')
 
-    repositories  = db.relation("Repository", secondary="organization_repositories",
+    repositories  = db.relation("Repository",
+                                secondary="organization_repositories",
+                                order_by="Repository.name",
                                 backref=db.backref(
                                     'organization', lazy=True, uselist=False
-                                ), lazy=True, collection_class=set, cascade='all, delete')
+                                ),
+                                lazy=True,
+                                collection_class=set,
+                                cascade='all, delete')
 
     query_class   = OrganizationQuery
 
