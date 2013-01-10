@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ _('Internal Error') }}{% endblock%}
+
+{% block contents %}
+  <h1>{% trans %}Internal Error{% endtrans %}</h1>
+  {% if account_is_admin %}
+  <p>{% trans %}Summary:{% endtrans %} {{ summary|e }}</p>
+  <p>{% trans %}Request Details:{% endtrans %}</p>
+  <pre>{{ request_details|e }}</pre>
+
+  <p>{% trans %}Python Traceback:{% endtrans %}</p>
+  <pre>{{ longtext|e }}</pre>
+  {% else %}
+  <style type="text/css" media="screen">
+    #body-wrapper {
+      background-color: #000;
+      background-image: url({{ url_for('static', filename='Escape_4200x1400_by_kartine29.png') }});
+      background-repeat: repeat-x;
+      background-position: 0% 35%;
+    }
+    h1, p {
+      color: orange;
+    }
+  </style>
+  <script type="text/javascript" charset="utf-8" src="http://www.spritely.net/releases/0.6.1/jquery.spritely-0.6.1.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $('#body-wrapper').pan({fps: 30, speed: 0.3, dir: 'left'});
+  </script>
+
+  <p>{% trans -%}
+    There was an internal error during processing.
+    The administrators have been notified.
+  {%- endtrans -%}
+  </p>
+  <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
+  <div id="flv-container"></div>
+  <script type="text/javascript" charset="utf-8">
+    swfobject.embedSWF(
+        "{{ url_for('static', filename='monitor_cleaner.swf') }}",
+        "flv-container",
+        $('#flv-container').width(),
+        "1000",
+        "9.0.0"
+    );
+  </script> -->
+  {% endif %}
+{% endblock%}

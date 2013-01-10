@@ -10,6 +10,7 @@
     :license: Apache 2.0, see LICENSE for more details.
 '''
 
+import sys
 from flask import (
     Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, json, jsonify,
     render_template
@@ -19,7 +20,9 @@ from flask.ext.babel import Babel, get_locale, gettext as _
 from flask.ext.cache import Cache
 from flask.ext.menubuilder import MenuBuilder, MenuItem, MenuItemContent
 from flask.ext.principal import Principal
+from flask.ext.sqlalchemy import get_debug_queries
 from urlparse import urlparse, urljoin
+from traceback import format_exception
 from werkzeug.contrib.fixers import ProxyFix
 from saltci.web.signals import application_configured, configuration_loaded
 from saltci.web.permissions import *
@@ -234,6 +237,32 @@ def on_404(error):
     if request.endpoint and 'static' not in request.endpoint:
         session['not_found'] = True
     return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def on_500(error):
+    from pprint import pprint
+    from StringIO import StringIO
+    from .permissions import admin_permission
+
+    user = 'anonymous'
+
+    identity = getattr(g, 'identity', None)
+
+    if identity:
+        account = getattr(identity, 'account', None)
+        if account:
+            user = account.gh_login
+
+    summary=str(error)
+    longtext=''.join(format_exception(*sys.exc_info()))
+    request_details = StringIO()
+    pprint(request.__dict__, request_details)
+    request_details.seek(0)
+
+    return render_template(
+        '500.html', error=error, user=user, summary=summary,
+        longtext=longtext, request_details=request_details.read()
+    ), 500
 # <---- Error Handlers ---------------------------------------------------------------------------
 
 
@@ -260,3 +289,45 @@ def get_timezone():
     # Return the user's preferred timezone
     return g.identity.account.timezone
 # <---- Setup Babel Selectors --------------------------------------------------------------------
+
+
+# ----- Custom Jinja Template Filters ----------------------------------------------------------->
+@app.template_filter('formatseconds')
+def seconds_format_filter(seconds):
+    if 0 < seconds < 1:
+        return '{0:.3f}ms'.format(seconds * 1000.0)
+    else:
+        return '{0:.3f}s'.format(seconds * 1.0)
+
+
+@application_configured.connect
+def define_highlight(app):
+    if app.config.get('DEBUG', False) or app.config.get('SQLALCHEMY_RECORD_QUERIES', False):
+        try:
+            # This is from the snipped found at http://pastebin.com/7jS9BeAH
+            from pygments import highlight
+            from pygments.lexers import get_lexer_by_name
+            from pygments.formatters import HtmlFormatter
+
+            @app.template_filter('sql_highlight')
+            def code_highlight(code):
+                lexer = get_lexer_by_name('sql', stripall=False)
+                formatter = HtmlFormatter(
+                    linenos=False, style='tango', noclasses=True, nobackground=True, nowrap=True
+                )
+                return Markup(highlight(code, lexer, formatter))
+        except ImportError:
+            @app.template_filter('sql_highlight')
+            def code_highlight(code):
+                return Markup(code)
+# <---- Custom Jinja Template Filters ------------------------------------------------------------
+
+
+# ----- Jinja Context Injectors ----------------------------------------------------------------->
+@app.context_processor
+def inject_in_context():
+    return dict(
+        get_debug_queries = get_debug_queries,
+        account_is_admin = g.identity.can(admin_permission)
+    )
+# <---- Jinja Context Injectors ------------------------------------------------------------------
