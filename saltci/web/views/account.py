@@ -156,7 +156,6 @@ def callback():
     if resp.status == 200:
         data = json.loads(data)
         token = data['access_token']
-        print 6666666666, token
 
         account = Account.query.from_github_token(token)
         if account is None:

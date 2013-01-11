@@ -54,7 +54,8 @@ class CustomBuild(build.build):
                 scss = os.path.join(static_path, dirpath, filename)
                 css = scss.replace('.scss', '.css')
                 log.info("Converting from %s to %s" % (scss, css))
-                subprocess.check_output([self.sass, '--unix-newlines', scss, css])
+                p = subprocess.Popen([self.sass, '--unix-newlines', scss, css])
+                p.wait()
 
 
 setup(name=package.__package_name__,

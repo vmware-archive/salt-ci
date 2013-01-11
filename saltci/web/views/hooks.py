@@ -18,6 +18,7 @@ from saltci.database.models import Account
 
 log = logging.getLogger(__name__)
 
+# http://developer.github.com/v3/repos/statuses/
 
 # ----- Blueprint ------------------------------------------------------------------------------->
 hooks = Blueprint('hooks', __name__, url_prefix='/hooks')
