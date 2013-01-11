@@ -22,4 +22,10 @@ main = Blueprint('main', __name__)
 @main.route('/', methods=('GET',))
 def index():
     return render_template('index.html')
+
+
+@main.route('/500', methods=('GET',))
+def i5():
+    1/0
+    return render_template('500.html')
 # <---- Views ------------------------------------------------------------------------------------

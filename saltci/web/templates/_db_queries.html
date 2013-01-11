@@ -13,7 +13,14 @@
     {% for entry in get_debug_queries() %}
     <tr>
       <td class="left">{{ entry.statement|sql_highlight }}</td>
-      <td class="params">{{ entry.parameters|join(',\n') }}</td>
+      <td class="params left">
+        {%- if entry.parameters %}
+        <ol>
+          {% for param in entry.parameters -%}
+          <li>{{param}}</li>
+          {%- endfor %}
+        </ol>
+        {% endif -%}
       <td class="small">{{ entry.duration|formatseconds }}</td>
     </tr>
     {% endfor %}

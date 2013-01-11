@@ -56,5 +56,8 @@
       {%- include '_footer.html' -%}
     </div>
     {% block footer %}{% endblock %}
+    {% if (config.DEBUG or config.SQLALCHEMY_RECORD_QUERIES) and account_is_admin==True %}
+      {%- include '_db_queries.html' -%}
+    {% endif %}
   </body>
 </html>

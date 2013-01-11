@@ -11,12 +11,14 @@
 '''
 
 import logging
+import github
 from functools import wraps
-from flask import session
+from flask import abort, g, session
 from flask.ext.principal import (
     AnonymousIdentity, Identity, Permission, Principal, RoleNeed, TypeNeed, identity_loaded,
-    identity_changed
+    identity_changed, ActionNeed, PermissionDenied
 )
+from flask.ext.wtf import Form, ValidationError
 from sqlalchemy.exc import OperationalError
 from saltci.database import db, models
 from saltci.web.signals import after_identity_account_loaded, application_configured
@@ -62,8 +64,13 @@ def on_application_configured(app):
     @identity_loaded.connect_via(app)
     def on_identity_loaded(sender, identity):
         log.trace('Identity loaded: {0}'.format(identity))
+
+        if identity.auth_type == '':
+            identity.account = None
+            return
+
         try:
-            identity.account = account = models.Account.query.from_github_token(identity.name)
+            identity.account = account = models.Account.query.get(int(identity.name))
             if account is not None:
                 log.trace(
                     'User \'{0}\' loaded from identity {1}'.format(
@@ -80,22 +87,16 @@ def on_application_configured(app):
                     for privilege in group.privileges:
                         # Add the group privileges to the user
                         identity.provides.add(RoleNeed(privilege.name))
+                # Setup this user's github api access
+                identity.github = github.Github(
+                    account.gh_token,
+                    client_id=app.config.get('GITHUB_CLIENT_ID'),
+                    client_secret=app.config.get('GITHUB_CLIENT_SECRET')
+                )
                 after_identity_account_loaded.send(sender, account=identity.account)
-
         except OperationalError:
             # Database has not yet been setup
             pass
-
-
-@principal.identity_loader
-def load_request_identity():
-    log.trace('Loading request identity. Session: {0}'.format(session))
-    if 'ght' in session:
-        identity = Identity(session['ght'], 'github-token')
-    else:
-        identity = AnonymousIdentity()
-        identity.account = None
-    return identity
 
 
 @principal.identity_saver
@@ -115,16 +116,12 @@ def save_request_identity(identity):
 
         privilege = Privilege.query.get(need)
         if not privilege:
-            log.debug('Privilege does not exist. Creating...')
+            log.debug('Privilege {0!r} does not exist. Creating...'.format(need))
             privilege = Privilege(need)
 
         if privilege not in identity.account.privileges:
             identity.account.privileges.add(privilege)
-
     db.session.commit()
-    session['ght'] = identity.account.gh_token
-    session.modified = True
-    print 12345, session
 
 
 def require_permissions(perms, from_keys=(), http_exception=None):

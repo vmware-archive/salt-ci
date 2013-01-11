@@ -96,14 +96,14 @@ class RepositoriesForm(DBBoundForm):
 # ----- Views ----------------------------------------------------------------------------------->
 @account.route('/signin', methods=('GET',))
 def signin():
-    github_token = session.get('ght', None)
-    if github_token is not None and g.identity.account is not None:
+    identity_account = getattr(g.identity, 'account', None)
+    if identity_account is not None:
         # This user is already authenticated and is valid user(it's present in our database)
         flash(_('You\'re already authenticated!'))
-        return redirect(url_for('main.index'))
-    elif github_token is not None and g.identity.account is None:
+        return redirect_back(url_for('main.index'))
+    elif identity_account is None:
         # If we reached this point, the github token is not in our database
-        session.pop('ght')
+        session.clear()
 
     # Let's login the user using github's oauth
 
@@ -114,7 +114,7 @@ def signin():
 
     urlargs = {
         'state': github_state,
-        'scopes': 'repo',
+        'scope': 'user:email, repo:status',
         'client_id': app.config.get('GITHUB_CLIENT_ID'),
         'redirect_uri': url_for('account.callback', _external=True)
     }
@@ -156,24 +156,28 @@ def callback():
     if resp.status == 200:
         data = json.loads(data)
         token = data['access_token']
-        session['ght'] = token
+        print 6666666666, token
 
         account = Account.query.from_github_token(token)
         if account is None:
             # We do not know this token.
-            gh = github.Github(token)
+            gh = github.Github(
+                token,
+                client_id=app.config.get('GITHUB_CLIENT_ID'),
+                client_secret=app.config.get('GITHUB_CLIENT_SECRET')
+            )
             gh_user = gh.get_user()
-            # Do we know the account?
+            # Do we know the account by the id?
             account = Account.query.get(gh_user.id)
             if account is None:
                 # This is a brand new account
-                new_account = Account(
+                account = Account(
                     gh_id=gh_user.id,
                     gh_login=gh_user.login,
                     gh_token=token,
                     avatar_url=gh_user.avatar_url
                 )
-                db.session.add(new_account)
+                db.session.add(account)
             else:
                 # We know this account though the access token has changed.
                 # Let's update the account details.
@@ -183,7 +187,7 @@ def callback():
                 account.avatar_url=gh_user.avatar_url
             db.session.commit()
 
-        identity_changed.send(app, identity=Identity(token, 'dbm'))
+        identity_changed.send(app, identity=Identity(account.gh_id, 'dbm'))
         flash(_('You are now signed in.'), 'success')
     return redirect(url_for('main.index'))
 
@@ -191,8 +195,8 @@ def callback():
 @account.route('/signout', methods=('GET',))
 @authenticated_permission.require(403)
 def signout():
-    if session.get('ght', None) is not None:
-        session.pop('ght')
+    if g.identity.account is not None:
+        session.clear()
         identity_changed.send(app, identity=AnonymousIdentity())
         flash(_('You are now signed out.'), 'success')
     else:
@@ -222,8 +226,7 @@ def repos():
             current_organizations = set(g.identity.account.organizations)
             current_repositories = set(g.identity.account.repositories.all())
             # Grab all repositories from GitHub and sync our database against them
-            gh = github.Github(session['ght'])
-            account = gh.get_user()
+            account = g.identity.github.get_user()
             for org in account.get_orgs():
                 organization = Organization.query.get(org.id)
                 if organization is None:
@@ -271,7 +274,7 @@ def repos():
                         if repository in current_repositories:
                             # let's remove it from the check-list
                             current_repositories.remove(repository)
-                    g.identity.account.managed_repositories.add(repository)
+                    g.identity.account.managed_repositories.append(repository)
                 for org in current_organizations:
                     # We apparently left some organizations:
                     g.identity.account.organizations.remove(org)
@@ -308,7 +311,7 @@ def repos():
                     if repository in current_repositories:
                         # let's remove it from the check-list
                         current_repositories.remove(repository)
-                g.identity.account.managed_repositories.add(repository)
+                g.identity.account.managed_repositories.append(repository)
             for repository in current_repositories:
                 # We're apparently not managing these
                 g.identity.account.repositories.remove(repository)

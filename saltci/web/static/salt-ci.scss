@@ -90,9 +90,38 @@ body {
   a:hover { color: #999; }
 }
 
-fieldset.hook-urls {
-  margin-left: 20px;
-  legend, label, input, span {
-    font-size: smaller;
+
+#dbdebug {
+  font-size: 0.7em;
+  margin: 0 auto;
+  padding: 0 0;
+  width: 99%;
+
+  //border: 1px solid #5C9CCC;
+
+  .left { text-align: left }
+
+  td, th { text-align: center; vertical-align: middle; padding: 2px 5px; }
+  td.params {
+    white-space: nowrap;
+    line-height: 5px;
+
+    ol {
+      margin: 2px 2px;
+      padding: 5px 5px;
+    }
   }
+  tbody td { font-family: saxMono; }
+  th.sum { font-size: 1.1em; }
+  //tr.even { background-color: #c9e5ee; }
+  th.title { font-size: 1.75em; }
+  th.total { text-align: right; }
+
+}
+
+th.small, td.small {
+  width: 1%;
+  white-space: nowrap;
+  padding-left: 10px;
+  padding-right: 10px;
 }
