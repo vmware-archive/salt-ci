@@ -240,7 +240,7 @@ def enable_hook(kind, repo):
             # We already have this hook set
             break
     else:
-        repo.create_hook(
+        repo.ghi.create_hook(
             'web', {
                 'url': repo.push_hook_url,
                 'salt-ci': True,
