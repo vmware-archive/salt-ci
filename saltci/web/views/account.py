@@ -218,7 +218,7 @@ def prefs():
 # ----- Repository hooks helper functions ------------------------------------------------------->
 def disable_hook(kind, repo):
     for hook in repo.ghi.get_hooks():
-        if 'salt-ci' not in hook.config:
+        if hook.config is not None and 'salt-ci' not in hook.config:
             # Don't touch other hooks
             continue
         if kind in hook.events:
@@ -233,7 +233,7 @@ def disable_hook(kind, repo):
 
 def enable_hook(kind, repo):
     for hook in repo.ghi.get_hooks():
-        if 'salt-ci' not in hook.config:
+        if hook.config is not None and 'salt-ci' not in hook.config:
             # Don't touch other hooks
             continue
         if kind in hook.events:
