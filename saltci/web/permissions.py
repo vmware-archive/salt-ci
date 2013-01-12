@@ -16,7 +16,7 @@ from functools import wraps
 from flask import abort, g, session
 from flask.ext.principal import (
     AnonymousIdentity, Identity, Permission, Principal, RoleNeed, TypeNeed, identity_loaded,
-    identity_changed, ActionNeed, PermissionDenied
+    identity_changed, ActionNeed, PermissionDenied, __version__ as __principal_version__
 )
 from flask.ext.wtf import Form, ValidationError
 from sqlalchemy.exc import OperationalError
@@ -39,6 +39,16 @@ ALL_PERMISSIONS_IMPORTS = [
 ]
 __all__ = ALL_PERMISSIONS_IMPORTS + ['ALL_PERMISSIONS_IMPORTS']
 # <---- Simplify * Imports -----------------------------------------------------------------------
+
+
+if tuple([int(i) for i in __principal_version__.rstrip('-dev').split('.')]) < (0, 3, 4):
+    Identity.__repr__ = lambda x: '<{0} name="{1}" auth_type="{2}" provides={3}>'.format(
+        x.__class__.__name__, x.name, x.auth_type, x.provides
+    )
+    Permission.__repr__ = lambda x: '<{0} needs={1} excludes={2}>'.format(
+        x.__class__.__name__, x.needs, x.excludes
+    )
+
 
 # Main permissions instance
 principal = Principal(use_sessions=True, skip_static=True)
