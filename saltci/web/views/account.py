@@ -232,12 +232,25 @@ def disable_hook(kind, repo):
 
 
 def enable_hook(kind, repo):
+    eventmap = {
+        'push': 'push',
+        'pull': 'pull_request'
+    }
+
+    if kind not in eventmap:
+        raise RuntimeError('You\'re trying to enable an unsupported hook type: {0}'.format(kind))
+
     for hook in repo.ghi.get_hooks():
         if hook.config is not None and 'salt-ci' not in hook.config:
             # Don't touch other hooks
             continue
-        if kind in hook.events:
+        if eventmap.get(kind) in hook.events:
             # We already have this hook set
+            log.debug(
+                'Repository {0!r} already has a salt-ci {1!r} hook. Skipping'.format(
+                    repo.full_name, kind
+                )
+            )
             break
     else:
         repo.ghi.create_hook(
@@ -246,7 +259,7 @@ def enable_hook(kind, repo):
                 'salt-ci': True,
                 'content_type': 'json'
             },
-            events=[kind == 'pull' and 'pull_request' or kind],
+            events=[eventmap.get(kind)],
             active=True
         )
         log.info('Created {0} hook for repository {1}'.format(kind, repo.full_name))
