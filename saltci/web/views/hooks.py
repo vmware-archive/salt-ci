@@ -38,14 +38,14 @@ def push(login=None, organization=None, reponame=None):
                     request.remote_addr, request.args, request.values
                 )
             )
-            abort(404)
+            return abort(404)
     except Exception, err:
         log.warning(
             'Got a malformed request from {0!r} which threw an exeption. Exception: {1!r}'.format(
                 request.remote_addr, err
             )
         )
-        abort(404)
+        return abort(404)
 
     if request.remote_addr not in app.config.get('GITHUB_PAYLOAD_IPS', ()):
         log.warning(
@@ -53,7 +53,7 @@ def push(login=None, organization=None, reponame=None):
                 request.remote_addr, pprint.pformat(payload, indent=2)
             )
         )
-        abort(404)
+        return abort(404)
 
     account = Account.query.get(login)
     if account is None:
@@ -63,7 +63,7 @@ def push(login=None, organization=None, reponame=None):
                 request.remote_addr, login, pprint.pformat(payload, indent=2)
             )
         )
-        abort(401)
+        return abort(401)
 
     if organization is not None:
         org = Organization.query.get(organization)
@@ -74,7 +74,7 @@ def push(login=None, organization=None, reponame=None):
                     request.remote_addr, organization, pprint.pformat(payload, indent=2)
                 )
             )
-            abort(404)
+            return abort(404)
         elif org not in account.organizations:
             log.warning(
                 'Got a hooks push request from {0} with an organization the user does not '
@@ -82,7 +82,7 @@ def push(login=None, organization=None, reponame=None):
                     request.remote_addr, organization, pprint.pformat(payload, indent=2)
                 )
             )
-            abort(404)
+            return abort(404)
 
     repository = account.managed_repositories.filter(Repository.name == reponame).first()
     if repository is None:
@@ -92,7 +92,7 @@ def push(login=None, organization=None, reponame=None):
                 request.remote_addr, reponame, pprint.pformat(payload, indent=2)
             )
         )
-        abort(404)
+        return abort(404)
 
     # Just log the payload information
     log.debug(
