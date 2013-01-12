@@ -219,7 +219,6 @@ def prefs():
 @authenticated_permission.require(403)
 def repos():
     form = RepositoriesForm(db_entry=g.identity.account, formdata=request.form.copy())
-    print 123, request.form
     if form.validate_on_submit():
         if 'sync_repos' in request.values:
             current_organizations = set(g.identity.account.organizations)
@@ -344,7 +343,6 @@ def repos():
                                                                   Repository.id.in_(push_active)):
                 repo.push_active = True
                 hook_enable.setdefault('push', []).append(repo)
-                print 12345, '\n\n', repo.owner, repo.organization
 
         else:
             # We need to sync, setting all to disable and then enable those that were passed to the
@@ -369,7 +367,6 @@ def repos():
             for repo in db_enabled_not_on_form:
                 repo.push_active = False
                 hook_disable.setdefault('push', []).append(repo)
-                print 12345, '\n\n', repo.owner, repo.organization
 
 
             # Then those which are active on the form but not yet active on the database
@@ -391,7 +388,6 @@ def repos():
             for repo in active_on_form_not_on_db:
                 repo.push_active = True
                 hook_enable.setdefault('push', []).append(repo)
-                print 12345, '\n\n', repo.owner, repo.organization
 
 
         pull_active = request.form.getlist('pull_active', type=int)
