@@ -32,6 +32,13 @@
 {% endmacro %}
 
 {% block form_contents %}
+
+<!-- XXX Remove this warning until we go live! -->
+<div class="alert alert-error alert-block">
+  <a href="#" data-dismiss="alert" class="close">&times;</a>
+  <h4>Any changes you make to the hooks <b>will</b> enable/disable hooks on Github</h4>
+</div>
+
 <div class="tabbable">
   <ul class="nav nav-tabs">
     <li class="active">
@@ -79,4 +86,8 @@
 {% block form_actions %}
 {{ form.update() }}
 {{ form.sync_repos() }}
+{% if g.identity.account.managed_repositories.count() > 0 %}
+{{ form.sync_hooks(title=_('Please avoid synchronizing the hooks state with Github. This is an '
+                           'extremely expensive operation.')) }}
+{% endif %}
 {% endblock %}

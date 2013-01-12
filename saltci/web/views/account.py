@@ -86,6 +86,7 @@ class RepositoriesForm(DBBoundForm):
 
     update          = PrimarySubmitField(_('Update Repositories'))
     sync_repos      = SubmitField(_('Synchronise Repositories'))
+    sync_hooks      = SubmitField(_('Synchronise Hooks State'))
 
     #def __init__(self, db_entry=None, formdata=None, *args, **kwargs):
     #    super(RepositoriesForm, self).__init__(db_entry, formdata, *args, **kwargs)
@@ -264,6 +265,48 @@ def enable_hook(kind, repo):
         )
         log.info('Created {0} hook for repository {1}'.format(kind, repo.full_name))
     setattr(repo, '{0}_active'.format(kind), True)
+
+
+def sync_hooks(repo):
+    has_push = has_pull = False
+    for hook in repo.ghi.get_hooks():
+        if hook.config is not None and 'salt-ci' not in hook.config:
+            # We're not interested in other hooks
+            continue
+        if 'push' in hook.events:
+            has_push = True
+        elif 'pull_request' in hook.events:
+            has_pull = True
+
+    if has_push and not repo.push_active:
+        log.info(
+            'Repository {0!r} synced push hook enabled state'.format(
+                repo.full_name
+            )
+        )
+        repo.push_active = True
+    elif not has_push and repo.push_active:
+        log.info(
+            'Repository {0!r} synced push hook disabled state'.format(
+                repo.full_name
+            )
+        )
+        repo.push_active = False
+
+    if has_pull and not repo.pull_active:
+        log.info(
+            'Repository {0!r} synced pull hook enabled state'.format(
+                repo.full_name
+            )
+        )
+        repo.pull_active = True
+    elif not has_pull and repo.pull_active:
+        log.info(
+            'Repository {0!r} synced pull hook disabled state'.format(
+                repo.full_name
+            )
+        )
+        repo.pull_active = False
 # <---- Repository hooks helper functions --------------------------------------------------------
 
 
@@ -271,12 +314,14 @@ def enable_hook(kind, repo):
 @authenticated_permission.require(403)
 def repos():
     form = RepositoriesForm(db_entry=g.identity.account, formdata=request.form.copy())
-    # XXX: Remove flash when live
-    flash(
-        Markup('Any changes you make to the hooks <b>will</b> enable/disable hooks on Github'),
-        'error'
-    )
     if form.validate_on_submit():
+        if 'sync_hooks' in request.values:
+            for repo in g.identity.account.managed_repositories:
+                sync_hooks(repo)
+            db.session.commit()
+            flash(_('Synchronized available repositories hook states with Github'), 'success')
+            return redirect_to('account.repos')
+
         if 'sync_repos' in request.values:
             current_organizations = set(g.identity.account.organizations)
             current_repositories = set(g.identity.account.repositories.all())
@@ -329,6 +374,7 @@ def repos():
                         if repository in current_repositories:
                             # let's remove it from the check-list
                             current_repositories.remove(repository)
+                    sync_hooks(repository)
                     g.identity.account.managed_repositories.append(repository)
                 for org in current_organizations:
                     # We apparently left some organizations:
@@ -366,6 +412,7 @@ def repos():
                     if repository in current_repositories:
                         # let's remove it from the check-list
                         current_repositories.remove(repository)
+                sync_hooks(repository)
                 g.identity.account.managed_repositories.append(repository)
             for repository in current_repositories:
                 # We're apparently not managing these
