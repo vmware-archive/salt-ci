@@ -231,7 +231,7 @@ def disable_hook(kind, repo):
     setattr(repo, '{0}_active'.format(kind), False)
 
 
-def enable_hook(kind, repos):
+def enable_hook(kind, repo):
     for hook in repo.ghi.get_hooks():
         if 'salt-ci' not in hook.config:
             # Don't touch other hooks
