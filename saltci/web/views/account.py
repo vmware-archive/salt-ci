@@ -242,7 +242,7 @@ def enable_hook(kind, repo):
     else:
         repo.ghi.create_hook(
             'web', {
-                'url': repo.push_hook_url,
+                'url': getattr(repo, '{0}_hook_url'.format(kind)),
                 'salt-ci': True,
                 'content_type': 'json'
             },
