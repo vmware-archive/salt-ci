@@ -117,7 +117,7 @@ def save_request_identity(identity):
         return
 
     for need in identity.provides:
-        log.debug('Identity provides: {0}'.format(need))
+        log.debug('Identity {0!r} provides: {1}'.format(identity, need))
         if need.method in ('type', 'role'):
             # We won't store type methods, ie, "authenticated", nor, role
             # methods which are permissions belonging to groups and managed
