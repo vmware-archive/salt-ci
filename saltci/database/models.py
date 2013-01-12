@@ -287,9 +287,11 @@ class Repository(db.Model):
             if exc.status == 404:
                 return abort(404)
 
+    @property
     def push_hook_url(self):
         return self.__hook_url('push')
 
+    @property
     def pull_hook_url(self):
         return self.__hook_url('pull')
 
