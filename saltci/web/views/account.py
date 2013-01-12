@@ -246,7 +246,7 @@ def enable_hook(kind, repo):
                 'salt-ci': True,
                 'content_type': 'json'
             },
-            events=[kind],
+            events=[kind == 'pull' and 'pull_request' or kind],
             active=True
         )
         log.info('Created {0} hook for repository {1}'.format(kind, repo.full_name))
