@@ -74,6 +74,7 @@ setup(name=package.__package_name__,
               '**.css',
               '**.js',
               '**.png',
+              '**.ico',
               '**.cfg',
               'web/translations/*/LC_MESSAGES/saltci.mo'
           ]
