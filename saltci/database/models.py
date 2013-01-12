@@ -14,7 +14,8 @@ import logging
 from uuid import uuid4
 from datetime import datetime
 from saltci.database import db, orm
-
+from github import GithubException
+from flask import abort, g, url_for
 
 log = logging.getLogger(__name__)
 
@@ -262,6 +263,44 @@ class Repository(db.Model):
         self.private = private
         self.push_active = push_active
         self.pull_active = pull_active
+
+    @property
+    def full_name(self):
+        if self.organization is not None:
+            return '{0}/{1}'.format(self.organization.login, self.name)
+        return '{0}/{1}'.format(self.owner.gh_login, self.name)
+
+    @property
+    def ghi(self):
+        '''
+        Return a github api access instance.
+        '''
+        try:
+            if self.organization is not None:
+                return g.identity.github.get_organization(self.organization.login).get_repo(
+                    self.name
+                )
+            return g.identity.github.get_user().get_repo(self.name)
+        except GithubException, exc:
+            log.warning('The user probably does not have the necessary github permissions')
+            log.exception(exc)
+            if exc.status == 404:
+                return abort(404)
+
+    def push_hook_url(self):
+        return self.__hook_url('push')
+
+    def pull_hook_url(self):
+        return self.__hook_url('pull')
+
+    def __hook_url(self, kind):
+        return url_for(
+            'hooks.{0}'.format(kind),
+            login=self.owner and self.owner.gh_login or g.identity.account.gh_login,
+            reponame=self.name,
+            organization=self.organization and self.organization.login or None,
+            _external=True
+        )
 
 
 # pylint: disable-msg=C0103
