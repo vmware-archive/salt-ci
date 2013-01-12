@@ -258,7 +258,11 @@ def enable_hook(kind, repos):
 @authenticated_permission.require(403)
 def repos():
     form = RepositoriesForm(db_entry=g.identity.account, formdata=request.form.copy())
-    print 123, request.form
+    # XXX: Remove flash when live
+    flash(
+        Markup('Any changes you make to the hooks <b>will</b> enable/disable hooks on Github'),
+        'error'
+    )
     if form.validate_on_submit():
         if 'sync_repos' in request.values:
             current_organizations = set(g.identity.account.organizations)
