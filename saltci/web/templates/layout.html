@@ -59,5 +59,10 @@
     {% if (config.DEBUG or config.SQLALCHEMY_RECORD_QUERIES) and account_is_admin==True %}
       {%- include '_db_queries.html' -%}
     {% endif %}
+    <script type="text/javascript" charset="utf-8">
+      $(document).ready(function() {
+        $('.alert-success').delay(7500).fadeOut();
+      });
+    </script>
   </body>
 </html>

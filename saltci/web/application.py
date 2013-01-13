@@ -86,13 +86,14 @@ def on_configuration_loaded(config):
     # Let's check for upgrades
     db.upgrade_database_required()
 
-    if app.debug:
+    if app.debug or app.testing:
         # LessCSS Support
         from flask.ext.sass import Sass
         sass = Sass(app)
 
-        from werkzeug.debug import DebuggedApplication
-        app.wsgi_app = DebuggedApplication(app.wsgi_app, True)
+        if app.debug:
+            from werkzeug.debug import DebuggedApplication
+            app.wsgi_app = DebuggedApplication(app.wsgi_app, True)
 
     # Application is configured, signal it
     application_configured.send(app)
@@ -237,6 +238,7 @@ def on_404(error):
     if request.endpoint and 'static' not in request.endpoint:
         session['not_found'] = True
     return render_template('404.html'), 404
+
 
 @app.errorhandler(500)
 def on_500(error):
