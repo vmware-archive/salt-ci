@@ -112,3 +112,7 @@ class SaltCIMigrateParser(saltparsers.OptionParser,
                     ', '.join(self.args)
                 )
             )
+
+
+class SaltWebMinionParser(saltparsers.MinionOptionParser):
+    pass

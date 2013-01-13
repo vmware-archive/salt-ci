@@ -14,7 +14,7 @@ import json
 import pprint
 import logging
 from saltci.web.application import *
-from saltci.database.models import Account, Repository
+from saltci.database.models import Account, Organization, Repository
 
 log = logging.getLogger(__name__)
 
