@@ -4,7 +4,7 @@
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
       {% if g.identity.account.avatar_url -%}
       <img class="gravatar" height="28" width="28" src="{{ g.identity.account.avatar_url }}"/>
-      {%- endif %} {{ g.identity.account.gh_login }}<b class="caret"></b>
+      {%- endif %} {{ g.identity.account.login }}<b class="caret"></b>
     </a>
     {{ menubuilder.render('top_account_nav') }}
   {% else %}

@@ -1,7 +1,7 @@
 {% extends "account/layout.html" %}
 
 {% block form_contents %}
-{{ render_field(form.gh_login) }}
+{{ render_field(form.login) }}
 {{ render_field(form.timezone) }}
 {% if form.locale.choices|length > 1 -%}
 {{ render_field(form.locale) }}

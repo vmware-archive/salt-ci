@@ -47,7 +47,7 @@ class ProfileForm(DBBoundForm):
 
     title       = _('My Account')
 
-    gh_login    = TextField(_('Username'), validators=[Required()])
+    login       = TextField(_('Username'), validators=[Required()])
     timezone    = SelectField(_('Timezone'))
     locale      = SelectField(_('Locale'),
                               description=_('This will be the language Salt-CI will use to you.'))
@@ -55,7 +55,6 @@ class ProfileForm(DBBoundForm):
 
     # Actions
     update      = PrimarySubmitField(_('Update Details'))
-    gen_token   = SubmitField(_('Generate Hooks Token'))
 
     def __init__(self, db_entry=None, formdata=None, *args, **kwargs):
         super(ProfileForm, self).__init__(db_entry, formdata, *args, **kwargs)
@@ -77,6 +76,7 @@ class ProfileForm(DBBoundForm):
 #            # rendered. Re-set the default.
 #            self.locale.data = self.db_entry.locale
 #        return super(ProfileForm, self).validate()
+
 
 class RepositoriesForm(DBBoundForm):
 
@@ -172,22 +172,26 @@ def callback():
             if account is None:
                 # This is a brand new account
                 account = Account(
-                    gh_id=gh_user.id,
-                    gh_login=gh_user.login,
-                    gh_token=token,
-                    avatar_url=gh_user.avatar_url
+                    gh_user.id,
+                    gh_user.login,
+                    gh_user.name,
+                    gh_user.email,
+                    token,
+                    gh_user.avatar_url
                 )
                 db.session.add(account)
             else:
                 # We know this account though the access token has changed.
                 # Let's update the account details.
-                account.gh_id = gh_user.id
-                account.gh_login = gh_user.login
-                account.gh_token = token
+                account.id = gh_user.id
+                account.login = gh_user.login
+                account.name = gh_user.name
+                account.email = gh_user.email
+                account.token = token
                 account.avatar_url=gh_user.avatar_url
             db.session.commit()
 
-        identity_changed.send(app, identity=Identity(account.gh_id, 'dbm'))
+        identity_changed.send(app, identity=Identity(account.id, 'dbm'))
         flash(_('You are now signed in.'), 'success')
     return redirect(url_for('main.index'))
 
@@ -274,8 +278,18 @@ def sync_hooks(repo):
             # We're not interested in other hooks
             continue
         if 'push' in hook.events:
+            log.debug(
+                'Repository {0!r} has push enabled. Config: {1}'.format(
+                    repo.full_name, hook.config
+                )
+            )
             has_push = True
         elif 'pull_request' in hook.events:
+            log.debug(
+                'Repository {0!r} has pull enabled. Config: {1}'.format(
+                    repo.full_name, hook.config
+                )
+            )
             has_pull = True
 
     if has_push and not repo.push_active:

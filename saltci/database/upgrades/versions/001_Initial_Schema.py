@@ -42,9 +42,11 @@ class SchemaVersion(Model):
 class Account(Model):
     __tablename__   = 'accounts'
 
-    gh_id           = db.Column('github_id', db.Integer, primary_key=True)
-    gh_login        = db.Column('github_login', db.String(100))
-    gh_token        = db.Column('github_access_token', db.String(100), index=True)
+    id              = db.Column('github_id', db.Integer, primary_key=True)
+    login           = db.Column('github_login', db.String(100))
+    name            = db.Column('github_name', db.String(100))
+    email           = db.Column('github_email', db.String(254))
+    token           = db.Column('github_access_token', db.String(100), index=True)
     avatar_url      = db.Column(db.String(2000))
     last_login      = db.Column(db.DateTime, default=datetime.utcnow)
     register_date   = orm.deferred(db.Column(db.DateTime, default=datetime.utcnow))
@@ -145,6 +147,7 @@ class Repository(Model):
 
     id            = db.Column('github_id', db.Integer, primary_key=True)
     name          = db.Column('github_name', db.String, index=True)
+    full_name     = db.Column('github_full_name', db.String)
     url           = db.Column('github_url', db.String)
     description   = db.Column('github_description', db.String)
     fork          = db.Column('github_fork', db.Boolean, default=False)

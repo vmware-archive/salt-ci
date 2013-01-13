@@ -251,7 +251,7 @@ def on_500(error):
     if identity:
         account = getattr(identity, 'account', None)
         if account:
-            user = account.gh_login
+            user = account.login
 
     summary=str(error)
     longtext=''.join(format_exception(*sys.exc_info()))

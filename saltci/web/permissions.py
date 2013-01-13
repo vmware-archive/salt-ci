@@ -84,7 +84,7 @@ def on_application_configured(app):
             if account is not None:
                 log.trace(
                     'User \'{0}\' loaded from identity {1}'.format(
-                        account.gh_login, identity
+                        account.login, identity
                     )
                 )
                 account.update_last_login()
@@ -99,7 +99,7 @@ def on_application_configured(app):
                         identity.provides.add(RoleNeed(privilege.name))
                 # Setup this user's github api access
                 identity.github = github.Github(
-                    account.gh_token,
+                    account.token,
                     client_id=app.config.get('GITHUB_CLIENT_ID'),
                     client_secret=app.config.get('GITHUB_CLIENT_SECRET')
                 )
