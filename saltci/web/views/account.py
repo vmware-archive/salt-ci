@@ -223,7 +223,7 @@ def prefs():
 # ----- Repository hooks helper functions ------------------------------------------------------->
 def disable_hook(kind, repo):
     for hook in repo.ghi.get_hooks():
-        if hook.config is not None and 'salt-ci' not in hook.config:
+        if hook.config is None or (hook.config is not None and 'salt-ci' not in hook.config):
             # Don't touch other hooks
             continue
         if kind in hook.events:
@@ -246,7 +246,7 @@ def enable_hook(kind, repo):
         raise RuntimeError('You\'re trying to enable an unsupported hook type: {0}'.format(kind))
 
     for hook in repo.ghi.get_hooks():
-        if hook.config is not None and 'salt-ci' not in hook.config:
+        if hook.config is None or (hook.config is not None and 'salt-ci' not in hook.config):
             # Don't touch other hooks
             continue
         if eventmap.get(kind) in hook.events:
@@ -274,7 +274,7 @@ def enable_hook(kind, repo):
 def sync_hooks(repo):
     has_push = has_pull = False
     for hook in repo.ghi.get_hooks():
-        if hook.config is not None and 'salt-ci' not in hook.config:
+        if hook.config is None or (hook.config is not None and 'salt-ci' not in hook.config):
             # We're not interested in other hooks
             continue
         if 'push' in hook.events:
