@@ -101,7 +101,12 @@ body {
 
   .left { text-align: left }
 
-  td, th { text-align: center; vertical-align: middle; padding: 2px 5px; }
+  td, th {
+    text-align: center;
+    vertical-align: middle;
+    padding: 2px 10px;
+  }
+
   td.params {
     white-space: nowrap;
     line-height: 5px;
@@ -111,9 +116,8 @@ body {
       padding: 5px 5px;
     }
   }
+
   tbody td { font-family: saxMono; }
-  th.sum { font-size: 1.1em; }
-  //tr.even { background-color: #c9e5ee; }
   th.title { font-size: 1.75em; }
   th.total { text-align: right; }
 
