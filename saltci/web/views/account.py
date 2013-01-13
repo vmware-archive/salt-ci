@@ -363,6 +363,7 @@ def repos():
                         repository = Repository(
                             id=repo.id,
                             name=repo.name,
+                            full_name=repo.full_name,
                             url=repo.html_url,
                             description=repo.description,
                             fork=repo.fork,
@@ -374,6 +375,7 @@ def repos():
                     else:
                         # Let's update entry
                         repository.name = repo.name
+                        repository.full_name = repo.full_name
                         repository.url = repo.html_url
                         repository.fork = repo.fork
                         repository.description = repo.description
@@ -407,6 +409,7 @@ def repos():
                     repository = Repository(
                         id=repo.id,
                         name=repo.name,
+                        full_name=repo.full_name,
                         url=repo.html_url,
                         description=repo.description,
                         fork=repo.fork,
@@ -418,6 +421,7 @@ def repos():
                 else:
                     # Let's update entry
                     repository.name = repo.name
+                    repository.full_name = repo.full_name
                     repository.url = repo.html_url
                     repository.description = repo.description
                     repository.private = repo.private
