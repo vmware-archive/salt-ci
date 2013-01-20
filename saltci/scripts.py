@@ -11,10 +11,16 @@
 '''
 
 
+def run_salt_ci_master():
+    from saltci.core.cli import SaltCIMaster
+    saltcimaster = SaltCIMaster()
+    saltcimaster.start()
+
+
 def run_salt_ci_web():
     from saltci.web.cli import SaltCIWeb
     saltciweb = SaltCIWeb()
-    saltciweb.run()
+    saltciweb.start()
 
 
 def run_salt_ci_migrate():

@@ -112,3 +112,31 @@ def saltci_migrate_config(path):
     opts = saltconfig.include_config(include, opts, path, verbose=True)
     saltconfig.prepend_root_dir(opts, ['log_file'])
     return opts
+
+
+def saltci_master_config(path):
+    # Get salt's master default options
+    opts = saltconfig.DEFAULT_MASTER_OPTS.copy()
+    # override with our own defaults
+    opts.update(_COMMON_CONFIG.copy())
+    # Tweak our defaults
+    opts.update(
+        # ----- Primary Configuration Settings -------------------------------------------------->
+        root_dir='/',
+        verify_env=True,
+        default_include='salt-ci-master.d/*.conf',
+        # <---- Primary Configuration Settings ---------------------------------------------------
+
+        # ----- Regular Settings ---------------------------------------------------------------->
+        log_file='/var/log/salt/salt-ci-master',
+        log_level=None,
+        #log_level_logfile=None,
+        #log_datefmt=saltconfig._dflt_log_datefmt,
+        #log_fmt_console=saltconfig._dflt_log_fmt_console,
+        #log_fmt_logfile=saltconfig._dflt_log_fmt_logfile,
+        #log_granular_levels={},
+        pidfile='/var/run/salt-ci-master.pid',
+        # <---- Regular Settings -----------------------------------------------------------------
+    )
+    # Return final and parsed options
+    return saltconfig.master_config(path, 'SALT_CI_MASTER_CONFIG', opts)

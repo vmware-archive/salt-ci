@@ -114,5 +114,11 @@ class SaltCIMigrateParser(saltparsers.OptionParser,
             )
 
 
+class SaltCIMaster(saltparsers.MasterOptionParser):
+    # ConfigDirMixIn methods
+    def setup_config(self):
+        return config.saltci_web_config(self.get_config_file_path('salt-ci-master'))
+
+
 class SaltWebMinionParser(saltparsers.MinionOptionParser):
     pass

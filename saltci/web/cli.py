@@ -21,17 +21,17 @@ from saltci.web.signals import configuration_loaded
 
 
 class SaltCIWeb(SaltCIWebParser):
-    def run(self):
+    def start(self):
         self.parse_args()
         try:
-            self._run()
+            self._start()
         except SaltCIStartupException, err:
             self.error(err)
         except KeyboardInterrupt:
             logging.getLogger(__name__).warn('\nCTRL-C. Exiting...')
             sys.exit(0)
 
-    def _run(self):
+    def _start(self):
 
         # ----- Setup some logging defaults for external python libraries ----------------------->
         logging.getLogger('sqlalchemy').setLevel(logging.INFO)
