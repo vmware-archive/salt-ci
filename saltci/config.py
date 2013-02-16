@@ -10,6 +10,8 @@
     :license: Apache 2.0, see LICENSE for more details.
 '''
 
+import os
+import urlparse
 from salt import config as saltconfig
 
 _COMMON_CONFIG = dict(
@@ -36,10 +38,22 @@ _COMMON_DB_CONFIG = dict(
 )
 
 
+def filter_options(opts, keys):
+    '''
+    Remove the provided keys from the configuration dictionary.
+    '''
+    if not keys:
+        return opts
+    for key in keys:
+        if key in opts:
+            opts.pop(key)
+    return opts
+
+
 def saltci_web_config(path):
-    opts = _COMMON_CONFIG.copy()
-    opts.update(_COMMON_DB_CONFIG.copy())
-    opts.update(
+    defaults = _COMMON_CONFIG.copy()
+    defaults.update(_COMMON_DB_CONFIG.copy())
+    defaults.update(
         # ----- Primary Configuration Settings -------------------------------------------------->
         root_dir='/',
         verify_env=True,
@@ -61,6 +75,7 @@ def saltci_web_config(path):
 
         # ----- Flask Related Settings ---------------------------------------------------------->
         # All uppercased settings will be made available on the Flask's configuration object
+        SALT_CLIENT_CONFIG=os.path.join(os.path.dirname(path), 'salt-ci-client'),
 
         # ----- Flask Application Settings ------------------------------------------------------>
         DEBUG=False,
@@ -88,29 +103,49 @@ def saltci_web_config(path):
 
         # <---- Flask Related Settings -----------------------------------------------------------
     )
-    saltconfig.load_config(opts, path, 'SALT_CI_WEB_CONFIG')
-    default_include = opts.get('default_include', [])
-    include = opts.get('include', [])
 
-    opts = saltconfig.include_config(default_include, opts, path, verbose=False)
-    opts = saltconfig.include_config(include, opts, path, verbose=True)
-    saltconfig.prepend_root_dir(opts, ['log_file'])
-    return opts
+    overrides = saltconfig.load_config(path, 'SALT_CI_WEB_CONFIG')
+    default_include = overrides.get('default_include', defaults['default_include'])
+    include = overrides.get('include', [])
+
+    overrides.update(saltconfig.include_config(default_include, path, verbose=False))
+    overrides.update(saltconfig.include_config(include, path, verbose=True))
+
+    return apply_ci_config(overrides, defaults)
 
 
 def saltci_migrate_config(path):
-    opts = _COMMON_CONFIG.copy()
-    opts.update(_COMMON_DB_CONFIG.copy())
-    opts.update(
+    defaults = _COMMON_CONFIG.copy()
+    defaults.update(_COMMON_DB_CONFIG.copy())
+    defaults.update(
         log_file='/var/log/salt/salt-ci-migrate'
     )
-    saltconfig.load_config(opts, path, 'SALT_CI_MIGRATE_CONFIG')
-    default_include = opts.get('default_include', [])
-    include = opts.get('include', [])
+    overrides = saltconfig.load_config(path, 'SALT_CI_MIGRATE_CONFIG')
 
-    opts = saltconfig.include_config(default_include, opts, path, verbose=False)
-    opts = saltconfig.include_config(include, opts, path, verbose=True)
-    saltconfig.prepend_root_dir(opts, ['log_file'])
+    default_include = overrides.get('default_include', defaults['default_include'])
+    include = overrides.get('include', [])
+
+    overrides.update(saltconfig.include_config(default_include, path, verbose=False))
+    overrides.update(saltconfig.include_config(include, path, verbose=True))
+
+    return apply_ci_config(overrides, defaults)
+
+
+def apply_ci_config(overrides, defaults):
+    opts = defaults.copy()
+    opts.update(overrides)
+    prepend_root_dirs = []
+    # These can be set to syslog, so, not actual paths on the system
+    for config_key in ('log_file',):
+        log_setting = opts.get(config_key, '')
+        if log_setting is None:
+            continue
+
+        if urlparse.urlparse(log_setting).scheme == '':
+            prepend_root_dirs.append(config_key)
+
+    if prepend_root_dirs:
+        saltconfig.prepend_root_dir(opts, prepend_root_dirs)
     return opts
 
 
@@ -140,3 +175,38 @@ def saltci_master_config(path):
     )
     # Return final and parsed options
     return saltconfig.master_config(path, 'SALT_CI_MASTER_CONFIG', opts)
+
+
+def salt_client_config(path):
+    # Get salt's master default options
+    opts = saltconfig.DEFAULT_MASTER_OPTS.copy()
+    # override with our own defaults
+    opts.update(_COMMON_CONFIG.copy())
+    # Tweak our defaults
+    opts.update(
+        # ----- Primary Configuration Settings -------------------------------------------------->
+        root_dir='/',
+        verify_env=True,
+        default_include='salt-ci-client.d/*.conf',
+        # <---- Primary Configuration Settings ---------------------------------------------------
+
+        # ----- Access Token Path --------------------------------------------------------------->
+        token_file='.salt-token',
+        # <---- Access Token Path ----------------------------------------------------------------
+
+        # ----- Regular Settings ---------------------------------------------------------------->
+        log_file='/var/log/salt/salt-ci-client',
+        log_level=None,
+        #log_level_logfile=None,
+        #log_datefmt=saltconfig._dflt_log_datefmt,
+        #log_fmt_console=saltconfig._dflt_log_fmt_console,
+        #log_fmt_logfile=saltconfig._dflt_log_fmt_logfile,
+        #log_granular_levels={},
+        pidfile='/var/run/salt-ci-client.pid',
+        # <---- Regular Settings -----------------------------------------------------------------
+    )
+    # Return final and parsed options
+    opts = saltconfig.client_config(path, 'SALT_CI_CLIENT_CONFIG', opts)
+    # Prepend root directory
+    saltconfig.prepend_root_dir(opts, ['token_file'])
+    return opts
