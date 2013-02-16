@@ -26,6 +26,7 @@ def index():
 
 @main.route('/500', methods=('GET',))
 def i5():
+    app.salt_client.event.fire_event('500 Error!!!', 'master')
     1/0
     return render_template('500.html')
 # <---- Views ------------------------------------------------------------------------------------
