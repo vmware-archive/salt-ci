@@ -1,5 +1,5 @@
 Jinja2>=2.4
-Salt>=0.13.1
+Salt>=0.13.0
 blinker
 Flask>=0.9
 sqlalchemy<=0.7.8
