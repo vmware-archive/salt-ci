@@ -10,7 +10,12 @@
     :license: Apache 2.0, see LICENSE for more details.
 '''
 
+# import python libs
 import sys
+from urlparse import urlparse, urljoin
+from traceback import format_exception
+
+# Import flask libs
 from flask import (
     Flask, flash, g, redirect, url_for, request, session, Markup, abort, Blueprint, json, jsonify,
     render_template
@@ -21,9 +26,13 @@ from flask.ext.cache import Cache
 from flask.ext.menubuilder import MenuBuilder, MenuItem, MenuItemContent
 from flask.ext.principal import Principal
 from flask.ext.sqlalchemy import get_debug_queries
-from urlparse import urlparse, urljoin
-from traceback import format_exception
 from werkzeug.contrib.fixers import ProxyFix
+
+# Import salt libs
+from salt.client import LocalClient
+from salt.config import client_config
+
+# Import Salt-CI libs
 from saltci.web.signals import application_configured, configuration_loaded
 from saltci.web.permissions import *
 
@@ -95,6 +104,8 @@ def on_configuration_loaded(config):
             from werkzeug.debug import DebuggedApplication
             app.wsgi_app = DebuggedApplication(app.wsgi_app, True)
 
+    # Let's setup a salt's local client
+    app.salt_client = LocalClient(mopts=client_config(config['SALT_CLIENT_CONFIG']))
     # Application is configured, signal it
     application_configured.send(app)
 # <---- Setup The Flask application --------------------------------------------------------------
@@ -204,8 +215,6 @@ def on_request_started(app):
     redirect_target = get_redirect_target(session.pop('_redirect_target', ()))
     if redirect_target is not None:
         session['_redirect_target'] = redirect_target
-
-    print 123, session
 
 
 @request_finished.connect_via(app)
