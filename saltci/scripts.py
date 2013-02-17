@@ -17,6 +17,12 @@ def run_salt_ci_master():
     saltcimaster.start()
 
 
+def run_salt_ci_key():
+    from saltci.master.cli import SaltCIKey
+    saltcikey = SaltCIKey()
+    saltcikey.run()
+
+
 def run_salt_ci_notif():
     from saltci.notif.cli import SaltCINotif
     saltcinotif = SaltCINotif()

@@ -96,6 +96,7 @@ setup(name=package.__package_name__,
       [console_scripts]
       salt-ci-master  = saltci.scripts:run_salt_ci_master
       salt-ci-notif   = saltci.scripts:run_salt_ci_notif
+      salt-ci-key     = saltci.scripts:run_salt_ci_key
       salt-ci-web     = saltci.scripts:run_salt_ci_web
       salt-ci-migrate = saltci.scripts:run_salt_ci_migrate
 
