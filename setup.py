@@ -99,7 +99,7 @@ setup(name=package.__package_name__,
       salt-ci-master        = saltci.scripts:run_salt_ci_master
 
       salt-ci-notif         = saltci.scripts:run_salt_ci_notif
-      salt-ci-notif-call    = saltci.scripts:run_salt_ci_notif
+      salt-ci-notif-call    = saltci.scripts:run_salt_ci_notif_call
 
       salt-ci-web           = saltci.scripts:run_salt_ci_web
       salt-ci-migrate       = saltci.scripts:run_salt_ci_migrate
