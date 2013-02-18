@@ -17,11 +17,17 @@ import os
 from salt import Master
 from salt.cli import SaltKey, SaltCMD
 
+# Import salt-ci libs
+from saltci import config
+
 
 class SaltCIMaster(Master):
 
     # ConfigDirMixIn configuration filename attribute
     _config_filename_ = 'salt-ci-master'
+
+    def setup_config(self):
+        return config.saltci_master_config(self.get_config_file_path())
 
 
 class SaltCIKey(SaltKey):
@@ -29,8 +35,14 @@ class SaltCIKey(SaltKey):
     # ConfigDirMixIn configuration filename attribute
     _config_filename_ = 'salt-ci-master'
 
+    def setup_config(self):
+        return config.saltci_master_config(self.get_config_file_path())
+
 
 class SaltCICMD(SaltCMD):
 
     # ConfigDirMixIn configuration filename attribute
     _config_filename_ = 'salt-ci-master'
+
+    def setup_config(self):
+        return config.saltci_master_config(self.get_config_file_path())
