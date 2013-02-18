@@ -68,8 +68,8 @@ setup(name=package.__package_name__,
       description=package.__summary__,
       long_description=package.__description__,
       license=package.__license__,
-      platforms="Linux",
-      keywords="Salt-CI Salt Continuous Integration",
+      platforms='Linux',
+      keywords='Salt-CI Salt Continuous Integration',
       packages=['saltci'],
       package_data={
           'saltci.': [
@@ -92,21 +92,25 @@ setup(name=package.__package_name__,
               ('web/templates/**.txt', 'jinja2', None)
           ],
       },
-      entry_points="""
+      entry_points='''
       [console_scripts]
-      salt-ci-master  = saltci.scripts:run_salt_ci_master
-      salt-ci-notif   = saltci.scripts:run_salt_ci_notif
-      salt-ci-key     = saltci.scripts:run_salt_ci_key
-      salt-ci-web     = saltci.scripts:run_salt_ci_web
-      salt-ci-migrate = saltci.scripts:run_salt_ci_migrate
+      salt-ci               = saltci.scripts:run_salt_ci
+      salt-ci-key           = saltci.scripts:run_salt_ci_key
+      salt-ci-master        = saltci.scripts:run_salt_ci_master
+
+      salt-ci-notif         = saltci.scripts:run_salt_ci_notif
+      salt-ci-notif-call    = saltci.scripts:run_salt_ci_notif
+
+      salt-ci-web           = saltci.scripts:run_salt_ci_web
+      salt-ci-migrate       = saltci.scripts:run_salt_ci_migrate
+
 
       [distutils.commands]
       compile = babel.messages.frontend:compile_catalog
       extract = babel.messages.frontend:extract_messages
          init = babel.messages.frontend:init_catalog
        update = babel.messages.frontend:update_catalog
-
-      """,
+      ''',
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Environment :: Web Environment',

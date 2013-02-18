@@ -10,21 +10,17 @@
     :license: Apache 2.0, see LICENSE for more details.
 '''
 
+# Import salt libs
 from salt import Minion
-from saltci import config
+from salt.cli import SaltCall
 
 
 class SaltCINotif(Minion):
 
-    # ConfigDirMixIn
-    def setup_config(self):
-        return config.saltci_notif_config(self.get_config_file_path('salt-ci-notif'))
+    # ConfigDirMixIn configuration filename attribute
+    _config_filename_ = 'salt-ci-notif'
 
-    def prepare(self):
-        super(SaltCINotif, self).prepare()
 
-    def start(self):
-        super(SaltCINotif, self).start()
-
-    def shutdown(self):
-        super(SaltCINotif, self).shutdown()
+class SaltCINotifCall(SaltCall):
+    # ConfigDirMixIn configuration filename attribute
+    _config_filename_ = 'salt-ci-notif'
