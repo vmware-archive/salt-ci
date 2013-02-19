@@ -37,6 +37,17 @@ _COMMON_DB_CONFIG = dict(
     # <---- Flask SQLAlchemy Settings ------------------------------------------------------------
 )
 
+_DEFAULT_SENDMAIL_CONFIG = dict(
+    smtp_host=None,
+    smtp_user=None,
+    smtp_pass=None,
+    smtp_port=25,
+    use_ssl=False,
+    use_tls=False,
+    sender=None,
+    reply_to=None
+)
+
 
 def saltci_master_config(path):
     '''
@@ -85,16 +96,7 @@ def saltci_notif_config(path, check_dns=True, env_var='SALT_CI_NOTIF_CONFIG'):
         # <---- Include salt-ci-notif modules  ---------------------------------------------------
 
         # ----- Sendmail Settings --------------------------------------------------------------->
-        sendmail=dict(
-            smtp_server=None,
-            smtp_username=None,
-            smtp_password=None,
-            smtp_port=25,
-            use_ssl=False,
-            use_tls=False,
-            sender=None,
-            reply_to=None
-        )
+        sendmail=_DEFAULT_SENDMAIL_CONFIG.copy(),
         # <---- Sendmail Settings ----------------------------------------------------------------
     )
     return saltconfig.minion_config(path, check_dns=check_dns, env_var=env_var, defaults=defaults)

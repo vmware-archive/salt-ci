@@ -16,6 +16,7 @@ import json
 import socket
 import logging
 import smtplib
+import getpass
 
 from email.encoders import encode_base64
 from email.mime.base import MIMEBase
@@ -23,23 +24,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, make_msgid
 
+# Import salt-ci libs
+from saltci.config import _DEFAULT_SENDMAIL_CONFIG
+
 
 log = logging.getLogger(__name__)
 
 
-__opts__ = dict(
-    sendmail=dict(
-        smtp_host=None,
-        smtp_port=25,
-        smtp_user=None,
-        smtp_pass=None,
-        use_ssl=False,
-        use_tls=False,
-        sender=None,
-        reply_to=None,
-        smtp_debug_level=0
-    )
-)
+__opts__ = _DEFAULT_SENDMAIL_CONFIG.copy()
 
 
 # Tell salt explicitly what functions this module provides
@@ -47,11 +39,36 @@ __load__ = ['send', 'test']
 
 
 def __virtual__():
-    smopts = __opts__['sendmail']
-    if not smopts['smtp_host'] or not smopts['smtp_user'] or not smopts['smtp_pass']:
-        log.warning('Sendmail not configured. Not loading.')
+    opts = _get_config()
+    if not opts['smtp_host'] or not opts['smtp_user'] or not opts['smtp_pass']:
+        log.warning('Sendmail not configured. Not loading module.')
         return False
     return True
+
+
+def _get_config():
+    '''
+    Load the default configuration.
+
+    We start with the default configuration and iterate over it's keys.
+    If the key is present in __opts__ and the value of __opts__[key] is not equal to the default
+    one, then that value is used and we continue onto the next key.
+    If the key is not found in __opts__, but instead is found in __pillar__ and the value of
+    __pillar__[key] is not equal to the default value, then that value is used.
+    If the key is not in either __opts__ nor __pillar__, the value remains at it's default.
+    '''
+
+    result = _DEFAULT_SENDMAIL_CONFIG.copy()
+    opts = __opts__.get('sendmail', {})
+    pillar = __pillar__.get('sendmail', {})
+    for key, value in _DEFAULT_SENDMAIL_CONFIG.iteritems():
+        if key in opts and opts[key] != value:
+            # Any options in __opts__ takes precedence to __pillar__
+            value = opts[key]
+        elif key in pillar and pillar[key] != value:
+            value = pillar[key]
+        result[key] = value
+    return result
 
 
 def _setup_mailserver():
@@ -70,28 +87,29 @@ class _Connection(object):
             # Already connected
             return
 
-        log.info(__opts__['sendmail'])
+        opts = _get_config()
+
         try:
-            if __opts__['sendmail'].get('use_ssl', False) is True:
+            if opts.get('use_ssl', False) is True:
                 log.debug(
                     'Setting up an SSL SMTP connection to {smtp_host}:{smtp_port}'.format(
-                        **__opts__['sendmail']
+                        **opts
                     )
                 )
                 mailserver = smtplib.SMTP_SSL(
-                    __opts__['sendmail']['smtp_host'],
-                    __opts__['sendmail']['smtp_port'],
+                    opts['smtp_host'],
+                    opts['smtp_port'],
                     timeout=5
                 )
             else:
                 log.debug(
                     'Setting up an SMTP connection to {smtp_host}:{smtp_port}'.format(
-                        **__opts__['sendmail']
+                        **opts
                     )
                 )
                 mailserver = smtplib.SMTP(
-                    __opts__['sendmail']['smtp_host'],
-                    __opts__['sendmail']['smtp_port'],
+                    opts['smtp_host'],
+                    opts['smtp_port'],
                     timeout=5
                 )
         except socket.error, err:
@@ -103,19 +121,19 @@ class _Connection(object):
 
         mailserver.ehlo_or_helo_if_needed()
 
-        if __opts__['sendmail'].get('use_tls', False):
+        if opts.get('use_tls', False):
             if 'starttls' not in mailserver.esmtp_features:
                 return 'TLS enabled but server does not support TLS'
             mailserver.starttls()
             mailserver.ehlo_or_helo_if_needed()
 
-        if __opts__['sendmail']['smtp_user'] and __opts__['sendmail']['smtp_pass']:
+        if opts['smtp_user'] and opts['smtp_pass']:
             mailserver.login(
-                __opts__['sendmail']['smtp_user'],
-                __opts__['sendmail']['smtp_pass']
+                opts['smtp_user'],
+                opts['smtp_pass']
             )
 
-        mailserver.set_debuglevel(__opts__['sendmail'].get('smtp_debug_level', 0))
+        mailserver.set_debuglevel(opts.get('smtp_debug_level', 0))
         self.server = mailserver
 
     def disconnect(self):
@@ -127,7 +145,7 @@ class _Connection(object):
             except socket.sslerror, err:
                 # avoid false failure detection when the server closes the SMTP connection with
                 # TLS enabled
-                if not __opts__['sendmail']['use_tls']:
+                if not opts['use_tls']:
                     log.exception(err)
                     raise err
 
@@ -227,12 +245,14 @@ def send(subject=None, recipients=(), sender=None, body=None, html=None, cc=(), 
                          'in a python dictionary'
             }
 
+    opts = _get_config()
+
     if charset is None:
         charset = 'utf-8'
 
     if sender is None:
         # Grab any sender set on the configuration
-        sender = __opts__['sendmail'].get('sender', __opts__['sendmail']['smtp_user'])
+        sender = opts.get('sender', opts['smtp_user'])
 
         if sender is None:
             # Sender is still None, let's compute it
@@ -242,8 +262,8 @@ def send(subject=None, recipients=(), sender=None, body=None, html=None, cc=(), 
         # sender can be tuple of (name, address)
         sender = '{0} <{1}>'.format(*sender)
 
-    if reply_to is None and __opts__['sendmail'].get('reply_to', None) is not None:
-        reply_to = __opts__['sendmail']['reply_to']
+    if reply_to is None and opts.get('reply_to', None) is not None:
+        reply_to = opts['reply_to']
     if isinstance(sender, (list, tuple)):
         # reply_to can be tuple of (name, address)
         reply_to = '{0} <{1}>'.format(*reply_to)
