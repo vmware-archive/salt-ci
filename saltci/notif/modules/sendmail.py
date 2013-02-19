@@ -16,7 +16,6 @@ import json
 import socket
 import logging
 import smtplib
-from datetime import datetime
 
 from email.encoders import encode_base64
 from email.mime.base import MIMEBase
@@ -43,7 +42,8 @@ __opts__ = dict(
 )
 
 
-__all__ = ['send', 'test']
+# Tell salt explicitly what functions this module provides
+__load__ = ['send', 'test']
 
 
 def __virtual__():
@@ -52,7 +52,6 @@ def __virtual__():
         log.warning('Sendmail not configured. Not loading.')
         return False
     return True
-    #return 'sendmail'
 
 
 def _setup_mailserver():
